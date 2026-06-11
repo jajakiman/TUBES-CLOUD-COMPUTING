@@ -2,6 +2,7 @@
 
 import { query } from '@/lib/db';
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import mysql from 'mysql2/promise';
 
 interface UserRow extends mysql.RowDataPacket {
@@ -49,8 +50,18 @@ export async function loginAction(formData: FormData): Promise<LoginResult> {
       path: '/',
     });
 
+    // 🚀 TAMBAHAN: Otomatis melempar user ke halaman utama setelah login sukses
+    // Ganti '/dashboard' di bawah ini jika rute utama kelompokmu menggunakan nama lain (misal: '/home' atau '/admin')
+    redirect('/dashboard'); 
+
     return { success: true };
   } catch (error: any) {
+    // INFO: Next.js 'redirect' secara teknis melempar error internal bertipe 'NEXT_REDIRECT'.
+    // Kita harus membiarkan error tersebut lolos agar proses pengalihan halaman tidak diblokir oleh blok catch.
+    if (error?.message === 'NEXT_REDIRECT') {
+      throw error;
+    }
+
     console.error('Database connection error in loginAction:', error);
     return {
       success: false,
