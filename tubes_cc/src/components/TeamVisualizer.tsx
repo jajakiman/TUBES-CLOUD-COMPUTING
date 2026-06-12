@@ -136,14 +136,14 @@ export default function TeamVisualizer({
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-400">Selesai</span>
+              <span className="text-xs font-bold text-slate-400">Completed</span>
               <span className="flex h-2 w-2 rounded-full bg-[#10b981]" />
             </div>
             <div className="mt-4">
               <span className="text-3xl font-black text-white">{completedMembersCount}</span>
-              <span className="text-xs text-slate-500 ml-1">orang</span>
+              <span className="text-xs text-slate-500 ml-1">members</span>
             </div>
-            <span className="text-[10px] text-slate-500 mt-1 block">Tugas 100% selesai</span>
+            <span className="text-[10px] text-slate-500 mt-1 block">Tasks 100% finished</span>
           </div>
 
           {/* Card: In Progress */}
@@ -156,17 +156,17 @@ export default function TeamVisualizer({
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-400">Sedang Kerja</span>
+              <span className="text-xs font-bold text-slate-400">In Progress</span>
               <span className="flex h-2 w-2 rounded-full bg-[#f59e0b]" />
             </div>
             <div className="mt-4">
               <span className="text-3xl font-black text-white">{inProgressMembersCount}</span>
-              <span className="text-xs text-slate-500 ml-1">orang</span>
+              <span className="text-xs text-slate-500 ml-1">members</span>
             </div>
-            <span className="text-[10px] text-slate-500 mt-1 block">Tugas masih berjalan</span>
+            <span className="text-[10px] text-slate-500 mt-1 block">Tasks in progress</span>
           </div>
 
-          {/* Card: No Todo */}
+          {/* Card: No Todo (Not Started) */}
           <div
             onClick={() => onFilterChange(activeFilter === 'no_todo' ? 'all' : 'no_todo')}
             className={`cursor-pointer rounded-r-xl border-y border-r border-white/5 border-l-4 p-4.5 transition-all duration-300 flex flex-col justify-between h-36 hover:scale-[1.02] ${
@@ -176,14 +176,14 @@ export default function TeamVisualizer({
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-400">Belum Ada</span>
+              <span className="text-xs font-bold text-slate-400">Not Started</span>
               <span className="flex h-2 w-2 rounded-full bg-[#64748b]" />
             </div>
             <div className="mt-4">
               <span className="text-3xl font-black text-white">{noTodoMembersCount}</span>
-              <span className="text-xs text-slate-500 ml-1">orang</span>
+              <span className="text-xs text-slate-500 ml-1">members</span>
             </div>
-            <span className="text-[10px] text-slate-500 mt-1 block">Belum buat to-do-list</span>
+            <span className="text-[10px] text-slate-500 mt-1 block">Tasks not started</span>
           </div>
 
         </div>
@@ -192,7 +192,7 @@ export default function TeamVisualizer({
       {activeFilter !== 'all' && (
         <div className="mt-4 flex items-center justify-between bg-cyan-500/5 border border-cyan-500/10 rounded-lg px-3 py-1.5 text-xs text-cyan-400">
           <span>
-            Filtering contributors list by status: <strong className="capitalize font-bold">{activeFilter === 'no_todo' ? 'Belum Ada To-Do-List' : activeFilter === 'in_progress' ? 'Sedang Mengerjakan' : 'Selesai'}</strong>
+            Filtering contributors list by status: <strong className="capitalize font-bold">{activeFilter === 'no_todo' ? 'Not Started' : activeFilter === 'in_progress' ? 'In Progress' : 'Completed'}</strong>
           </span>
           <button 
             onClick={() => onFilterChange('all')}

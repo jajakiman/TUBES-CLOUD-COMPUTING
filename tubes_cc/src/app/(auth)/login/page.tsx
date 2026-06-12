@@ -2,7 +2,6 @@
 
 import React, { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { loginAction } from '@/app/actions/auth';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,15 +14,26 @@ export default function LoginPage() {
     setError(null);
 
     const formData = new FormData(e.currentTarget);
+    const username = formData.get('username');
+    const password = formData.get('password');
 
     startTransition(async () => {
-      const result = await loginAction(formData);
-      if (result.success) {
-        // Redirect to secure dashboard view on successful login
-        router.push('/dashboard');
-        router.refresh();
-      } else {
-        setError(result.error || 'Authentication failed. Please try again.');
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        });
+        const result = await res.json();
+        if (result.success) {
+          // Redirect to secure dashboard view on successful login
+          router.push('/dashboard');
+          router.refresh();
+        } else {
+          setError(result.error || 'Authentication failed. Please try again.');
+        }
+      } catch (err) {
+        setError('Failed to connect to the authentication service.');
       }
     });
   };
@@ -56,13 +66,13 @@ export default function LoginPage() {
           </div>
           
           <h2 className="mt-5 text-2xl font-bold tracking-tight text-white md:text-3xl">
-            System <span className="text-[#00f0ff]">Sign In</span>
+          <span className="text-[#00f0ff]">Sign In</span>
           </h2>
           
           <p className="mt-2.5 text-[10px] font-bold tracking-[0.15em] text-[#4b5b75] uppercase leading-relaxed">
-            Multi-Instance AWS Deployment
+            TUGAS BESAR CLOUD COMPUTING
             <br />
-            Monolith
+            KELOMPOK 3
           </p>
         </div>
 
@@ -172,10 +182,9 @@ export default function LoginPage() {
 
         <div className="mt-8 border-t border-[#121c2e] pt-6">
           <p className="text-[11px] font-medium text-[#4b5b75] text-center mb-1.5 leading-none">
-            Access restricted to authorized personnel only.
+            Multi-Instance AWS Deployment
           </p>
           <p className="text-[9px] font-bold text-[#344259] tracking-[0.12em] text-center leading-none">
-            SECURITY LEVEL: ALPHA • CLUSTER: ALPHA-7
           </p>
         </div>
       </div>
@@ -191,10 +200,10 @@ export default function LoginPage() {
         </div>
         <div className="flex flex-col">
           <span className="text-[10px] font-extrabold tracking-wider text-white uppercase leading-none">
-            Cloud Monolith
+            Kelompok 3
           </span>
           <span className="text-[9px] font-medium text-[#4b5b75] leading-none mt-1">
-            v0.4.2-stable
+            Tugas Besar Cloud Computing
           </span>
         </div>
       </div>

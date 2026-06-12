@@ -1,22 +1,28 @@
 'use client';
 
-import React, { useState, useTransition } from 'react';
+import React, { useState, useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Todo, createTodoAction, updateTodoAction, deleteTodoAction } from '@/app/actions/todos';
+import { Todo } from '@/app/actions/todos';
 
 interface TodoListProps {
   initialTodos: Todo[];
   readOnly?: boolean;
   ownerName?: string;
+  onMutationSuccess?: () => void;
 }
 
 type FilterStatus = 'all' | 'pending' | 'in_progress' | 'completed';
 
-export default function TodoList({ initialTodos, readOnly = false, ownerName }: TodoListProps) {
+export default function TodoList({ initialTodos, readOnly = false, ownerName, onMutationSuccess }: TodoListProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [filter, setFilter] = useState<FilterStatus>('all');
-  
+  const [todos, setTodos] = useState<Todo[]>(initialTodos);
+
+  useEffect(() => {
+    setTodos(initialTodos);
+  }, [initialTodos]);
+
   // Form state for creating a new todo
   const [newTitle, setNewTitle] = useState('');
   const [newDesc, setNewDesc] = useState('');
@@ -30,17 +36,30 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName }: 
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Fetch all todos from the API microservice
+  const fetchTodos = async () => {
+    try {
+      const res = await fetch('/api/todos');
+      const data = await res.json();
+      if (data.success) {
+        setTodos(data.todos);
+      }
+    } catch (err) {
+      console.error('Failed to fetch todos:', err);
+    }
+  };
+
   // Filter logic
-  const filteredTodos = initialTodos.filter((todo) => {
+  const filteredTodos = todos.filter((todo) => {
     if (filter === 'all') return true;
     return todo.status === filter;
   });
 
   // Task count calculations
-  const totalCount = initialTodos.length;
-  const completedCount = initialTodos.filter((t) => t.status === 'completed').length;
-  const inProgressCount = initialTodos.filter((t) => t.status === 'in_progress').length;
-  const pendingCount = initialTodos.filter((t) => t.status === 'pending').length;
+  const totalCount = todos.length;
+  const completedCount = todos.filter((t) => t.status === 'completed').length;
+  const inProgressCount = todos.filter((t) => t.status === 'in_progress').length;
+  const pendingCount = todos.filter((t) => t.status === 'pending').length;
   const completionPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   // Handle Create
@@ -50,14 +69,24 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName }: 
     setErrorMessage(null);
 
     startTransition(async () => {
-      const res = await createTodoAction(newTitle, newDesc);
-      if (res.success) {
-        setNewTitle('');
-        setNewDesc('');
-        setShowDescInput(false);
-        router.refresh();
-      } else {
-        setErrorMessage(res.error || 'Failed to create task.');
+      try {
+        const res = await fetch('/api/todos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: newTitle, description: newDesc }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setNewTitle('');
+          setNewDesc('');
+          setShowDescInput(false);
+          await fetchTodos();
+          onMutationSuccess?.();
+        } else {
+          setErrorMessage(data.error || 'Failed to create task.');
+        }
+      } catch (err) {
+        setErrorMessage('Failed to connect to the task service.');
       }
     });
   };
@@ -66,11 +95,21 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName }: 
   const handleToggleComplete = async (todo: Todo) => {
     const nextStatus = todo.status === 'completed' ? 'pending' : 'completed';
     startTransition(async () => {
-      const res = await updateTodoAction(todo.id, todo.title, todo.description, nextStatus);
-      if (res.success) {
-        router.refresh();
-      } else {
-        setErrorMessage(res.error || 'Failed to update task.');
+      try {
+        const res = await fetch(`/api/todos/${todo.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: todo.title, description: todo.description, status: nextStatus }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          await fetchTodos();
+          onMutationSuccess?.();
+        } else {
+          setErrorMessage(data.error || 'Failed to update task.');
+        }
+      } catch (err) {
+        setErrorMessage('Failed to connect to the task service.');
       }
     });
   };
@@ -82,11 +121,21 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName }: 
     else if (todo.status === 'in_progress') nextStatus = 'completed';
 
     startTransition(async () => {
-      const res = await updateTodoAction(todo.id, todo.title, todo.description, nextStatus);
-      if (res.success) {
-        router.refresh();
-      } else {
-        setErrorMessage(res.error || 'Failed to update task.');
+      try {
+        const res = await fetch(`/api/todos/${todo.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: todo.title, description: todo.description, status: nextStatus }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          await fetchTodos();
+          onMutationSuccess?.();
+        } else {
+          setErrorMessage(data.error || 'Failed to update task.');
+        }
+      } catch (err) {
+        setErrorMessage('Failed to connect to the task service.');
       }
     });
   };
@@ -97,12 +146,22 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName }: 
     if (!editingTodo || !editTitle.trim()) return;
 
     startTransition(async () => {
-      const res = await updateTodoAction(editingTodo.id, editTitle, editDesc, editStatus);
-      if (res.success) {
-        setEditingTodo(null);
-        router.refresh();
-      } else {
-        setErrorMessage(res.error || 'Failed to save task edits.');
+      try {
+        const res = await fetch(`/api/todos/${editingTodo.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: editTitle, description: editDesc, status: editStatus }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setEditingTodo(null);
+          await fetchTodos();
+          onMutationSuccess?.();
+        } else {
+          setErrorMessage(data.error || 'Failed to save task edits.');
+        }
+      } catch (err) {
+        setErrorMessage('Failed to connect to the task service.');
       }
     });
   };
@@ -120,11 +179,19 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName }: 
     if (!confirm('Are you sure you want to delete this task?')) return;
 
     startTransition(async () => {
-      const res = await deleteTodoAction(id);
-      if (res.success) {
-        router.refresh();
-      } else {
-        setErrorMessage(res.error || 'Failed to delete task.');
+      try {
+        const res = await fetch(`/api/todos/${id}`, {
+          method: 'DELETE',
+        });
+        const data = await res.json();
+        if (data.success) {
+          await fetchTodos();
+          onMutationSuccess?.();
+        } else {
+          setErrorMessage(data.error || 'Failed to delete task.');
+        }
+      } catch (err) {
+        setErrorMessage('Failed to connect to the task service.');
       }
     });
   };
@@ -158,7 +225,7 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName }: 
             </div>
             <div className="h-1.5 w-full rounded-full bg-slate-950 overflow-hidden">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-blue-500 to-emerald-400 transition-all duration-500 ease-out"
+                className="h-full rounded-full bg-gradient-to-r from-blue-500 to-[#00f0ff] transition-all duration-500 ease-out"
                 style={{ width: `${completionPercentage}%` }}
               />
             </div>
@@ -203,7 +270,7 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName }: 
             <button
               type="submit"
               disabled={isPending || !newTitle.trim()}
-              className="rounded-xl bg-gradient-to-r from-blue-600 to-emerald-500 hover:from-blue-500 hover:to-emerald-400 px-4 py-2.5 text-sm font-semibold text-white transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none shadow-md"
+              className="rounded-xl bg-gradient-to-r from-blue-600 to-[#00f0ff] hover:from-blue-500 hover:to-[#00f0ff]/80 px-4 py-2.5 text-sm font-semibold text-white transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none shadow-md shadow-blue-500/10"
             >
               Add
             </button>
@@ -234,15 +301,15 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName }: 
           <button
             key={tab.id}
             onClick={() => setFilter(tab.id as FilterStatus)}
-            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all shrink-0 flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all shrink-0 flex items-center gap-1.5 border ${
               filter === tab.id
-                ? 'bg-white/5 text-white shadow-sm border border-white/10'
-                : 'text-slate-400 hover:text-slate-200 border border-transparent'
+                ? 'bg-blue-500/10 text-[#00f0ff] border-blue-500/30 shadow-md shadow-blue-500/5'
+                : 'text-slate-400 hover:text-slate-200 border-transparent'
             }`}
           >
             <span>{tab.label}</span>
-            <span className={`px-1.5 py-0.5 rounded text-[10px] ${
-              filter === tab.id ? 'bg-blue-500/20 text-blue-300' : 'bg-slate-950 text-slate-500'
+            <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold transition-colors ${
+              filter === tab.id ? 'bg-blue-600 text-white' : 'bg-slate-950 text-slate-500'
             }`}>
               {tab.count}
             </span>
@@ -286,7 +353,7 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName }: 
                 disabled={isPending || readOnly}
                 className={`mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full border transition-all ${
                   todo.status === 'completed'
-                    ? 'border-emerald-500 bg-emerald-500 text-slate-950 shadow shadow-emerald-500/20'
+                    ? 'border-emerald-500 bg-emerald-500 text-white shadow shadow-emerald-500/20'
                     : 'border-white/20 bg-slate-900' + (readOnly ? '' : ' group-hover:border-blue-500/50 cursor-pointer')
                 }`}
               >
@@ -320,7 +387,7 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName }: 
                 {/* Status Cycle Badge */}
                 {readOnly ? (
                   <span
-                    className={`inline-flex items-center rounded px-2 py-0.5 text-[10px] font-medium border ${
+                    className={`inline-flex items-center rounded px-2 py-0.5 text-[10px] font-bold border ${
                       todo.status === 'completed'
                         ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                         : todo.status === 'in_progress'
@@ -329,10 +396,10 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName }: 
                     }`}
                   >
                     {todo.status === 'completed'
-                      ? 'Selesai'
+                      ? 'COMPLETED'
                       : todo.status === 'in_progress'
-                      ? 'In Progress'
-                      : 'Not Started'}
+                      ? 'IN PROGRESS'
+                      : 'NOT STARTED'}
                   </span>
                 ) : (
                   <>
@@ -340,7 +407,7 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName }: 
                       type="button"
                       onClick={() => handleCycleStatus(todo)}
                       disabled={isPending}
-                      className={`inline-flex items-center rounded px-2 py-0.5 text-[10px] font-medium transition-all active:scale-[0.98] border ${
+                      className={`inline-flex items-center rounded px-2 py-0.5 text-[10px] font-bold transition-all active:scale-[0.98] border ${
                         todo.status === 'completed'
                           ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                           : todo.status === 'in_progress'
@@ -349,10 +416,10 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName }: 
                       }`}
                     >
                       {todo.status === 'completed'
-                        ? 'Selesai'
+                        ? 'COMPLETED'
                         : todo.status === 'in_progress'
-                        ? 'In Progress'
-                        : 'Not Started'}
+                        ? 'IN PROGRESS'
+                        : 'NOT STARTED'}
                     </button>
 
                     {/* Edit Action Button */}
@@ -393,6 +460,15 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName }: 
           ))
         )}
       </div>
+
+      {!readOnly && (
+        <div className="mt-8 pt-6 border-t border-white/5 text-center flex flex-col items-center justify-center">
+          <svg className="h-6 w-6 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mt-2">Add more infrastructure tasks</span>
+        </div>
+      )}
 
       {/* Edit Todo Modal */}
       {editingTodo && (
@@ -441,9 +517,9 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName }: 
                   disabled={isPending}
                   className="block w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2.5 text-sm text-white outline-none transition-all focus:border-blue-500/80"
                 >
-                  <option value="pending">Not Started (Belum Mulai)</option>
-                  <option value="in_progress">In Progress (Sedang Mengerjakan)</option>
-                  <option value="completed">Completed (Selesai)</option>
+                  <option value="pending">Not Started</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="completed">Completed</option>
                 </select>
               </div>
 
