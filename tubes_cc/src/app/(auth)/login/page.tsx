@@ -27,8 +27,7 @@ export default function LoginPage() {
         const result = await res.json();
         if (result.success) {
           // Redirect to secure dashboard view on successful login
-          router.push('/dashboard');
-          router.refresh();
+          window.location.href = '/dashboard';
         } else {
           setError(result.error || 'Authentication failed. Please try again.');
         }

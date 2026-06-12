@@ -51,14 +51,14 @@ export async function loginAction(formData: FormData): Promise<LoginResult> {
     });
 
     // 🚀 TAMBAHAN: Otomatis melempar user ke halaman utama setelah login sukses
-    // Ganti '/dashboard' di bawah ini jika rute utama kelompokmu menggunakan nama lain (misal: '/home' atau '/admin')
+    // Ganti '/dashboard' di bawah ini jika rute utama kelompokmu menggunakan nama lain (misal: '/home' or '/admin')
     redirect('/dashboard'); 
 
     return { success: true };
   } catch (error: any) {
     // INFO: Next.js 'redirect' secara teknis melempar error internal bertipe 'NEXT_REDIRECT'.
     // Kita harus membiarkan error tersebut lolos agar proses pengalihan halaman tidak diblokir oleh blok catch.
-    if (error?.message === 'NEXT_REDIRECT') {
+    if (error && typeof error === 'object' && 'digest' in error && typeof error.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT')) {
       throw error;
     }
 

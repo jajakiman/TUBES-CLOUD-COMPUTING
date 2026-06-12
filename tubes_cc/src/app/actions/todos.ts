@@ -26,8 +26,8 @@ interface TodoRow extends mysql.RowDataPacket {
   title: string;
   description: string | null;
   status: string;
-  created_at: any;
-  updated_at: any;
+  created_at: string | Date;
+  updated_at: string | Date;
 }
 
 /**
@@ -103,14 +103,14 @@ export async function createTodoAction(
 
     await query(
       'INSERT INTO todos (user_id, title, description, status) VALUES (?, ?, ?, ?)',
-      [user.id, title.trim(), description?.trim() || null, 'pending']
+      [user.id, title.trim(), description?.trim() || null, 'in_progress']
     );
 
     revalidatePath('/dashboard');
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in createTodoAction:', error);
-    return { success: false, error: error?.message || 'Failed to create task' };
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to create task' };
   }
 }
 
@@ -150,9 +150,9 @@ export async function updateTodoAction(
 
     revalidatePath('/dashboard');
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in updateTodoAction:', error);
-    return { success: false, error: error?.message || 'Failed to update task' };
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to update task' };
   }
 }
 
@@ -182,9 +182,9 @@ export async function deleteTodoAction(
 
     revalidatePath('/dashboard');
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in deleteTodoAction:', error);
-    return { success: false, error: error?.message || 'Failed to delete task' };
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to delete task' };
   }
 }
 

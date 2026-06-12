@@ -122,10 +122,10 @@ export default function AdminDashboard({
           {/* Logo / Brand */}
           <div>
             <h2 className="text-xl font-bold tracking-wider text-[#00f0ff] uppercase">
-              Cloud Monolith
+              Tracker Task
             </h2>
             <span className="text-[10px] text-slate-500 font-bold tracking-widest block mt-0.5">
-              V0.4.2-Stable
+              Monitoring & Manajamen Kontributor
             </span>
           </div>
 
@@ -167,9 +167,6 @@ export default function AdminDashboard({
         {/* Top Header Navbar */}
         <header className="h-18 border-b border-white/5 px-8 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-6">
-            <h2 className="text-sm font-bold text-[#00f0ff] uppercase tracking-wider hidden sm:block">
-              Cloud Monolith Dashboard
-            </h2>
 
             {/* Search Input */}
             <div className="relative">

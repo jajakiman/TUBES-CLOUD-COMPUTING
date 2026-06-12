@@ -40,7 +40,7 @@ export async function GET() {
     );
 
     return NextResponse.json({ success: true, todos });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in GET todos microservice API:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error.' },
@@ -75,11 +75,11 @@ export async function POST(request: NextRequest) {
 
     const result = await query<mysql.ResultSetHeader>(
       'INSERT INTO todos (user_id, title, description, status) VALUES (?, ?, ?, ?)',
-      [userId, title.trim(), description?.trim() || null, 'pending']
+      [userId, title.trim(), description?.trim() || null, 'in_progress']
     );
 
     return NextResponse.json({ success: true, todoId: result.insertId });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in POST todo microservice API:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error.' },
