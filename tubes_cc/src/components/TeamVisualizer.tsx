@@ -38,44 +38,26 @@ export default function TeamVisualizer({
   const strokeDashoffset = circumference - (completionPercentage / 100) * circumference;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/5 bg-[#090d16] p-6 shadow-xl transition-all duration-300">
-      
-      {/* Header with Title and Icons */}
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">
+    <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md">
+      {/* Subtle top background abstract gradient panel */}
+      <div className="absolute left-0 right-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
+      <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full bg-gradient-to-tr from-indigo-500/5 to-violet-500/5 blur-3xl pointer-events-none" />
+
+      {/* Header with Title */}
+      <div className="mb-6">
+        <h3 className="text-sm font-extrabold text-slate-800 uppercase tracking-wider leading-none">
           Team Progress Overview
         </h3>
-        <div className="flex items-center gap-2.5 text-slate-500">
-          <button 
-            type="button"
-            onClick={() => onFilterChange('all')}
-            className="p-1.5 hover:text-white transition-colors rounded-lg hover:bg-white/5 cursor-pointer"
-            title="Reset active filters"
-          >
-            <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8.89M9 11l3 3L22 4" />
-            </svg>
-          </button>
-          <button 
-            type="button"
-            className="p-1.5 hover:text-white transition-colors rounded-lg hover:bg-white/5"
-          >
-            <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-            </svg>
-          </button>
-        </div>
+        <p className="text-[11px] text-slate-400 mt-1.5 font-semibold leading-none">
+          Real-time collaboration status metrics
+        </p>
       </div>
 
-      {/* Bento Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+      {/* Flex container */}
+      <div className="flex flex-col md:flex-row gap-8 items-center">
         
-        {/* Left Column: SVG Circular Progress Ring */}
-        <div 
-          onClick={() => onFilterChange('all')}
-          className="flex flex-col items-center justify-center bg-[#050811] rounded-xl p-5 border border-white/5 cursor-pointer hover:bg-white/[0.02] transition-all duration-300 shrink-0 group h-36"
-          title="Click to reset filter to All"
-        >
+        {/* Left: SVG Circular Progress Ring */}
+        <div className="flex flex-col items-center justify-center bg-slate-50 border border-slate-200/80 rounded-2xl p-5 shrink-0 w-36 h-36">
           <div className="relative flex items-center justify-center">
             {/* SVG Ring */}
             <svg className="h-24 w-24 transform -rotate-90">
@@ -83,14 +65,14 @@ export default function TeamVisualizer({
                 cx="48"
                 cy="48"
                 r={radius}
-                className="stroke-slate-900 fill-none"
+                className="stroke-slate-200/60 fill-none"
                 strokeWidth={strokeWidth}
               />
               <circle
                 cx="48"
                 cy="48"
                 r={radius}
-                className="stroke-cyan-400 fill-none transition-all duration-500 ease-out"
+                className="fill-none transition-all duration-500 ease-out"
                 strokeWidth={strokeWidth}
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}
@@ -102,106 +84,57 @@ export default function TeamVisualizer({
               {/* Define Gradient */}
               <defs>
                 <linearGradient id="completionGlowAdmin" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#00f0ff" /> {/* Cyan */}
-                  <stop offset="100%" stopColor="#3b82f6" /> {/* Blue */}
+                  <stop offset="0%" stopColor="#4f46e5" /> {/* Indigo */}
+                  <stop offset="100%" stopColor="#8b5cf6" /> {/* Violet */}
                 </linearGradient>
               </defs>
             </svg>
 
             {/* Inner Percentage text */}
             <div className="absolute flex flex-col items-center">
-              <span className="font-mono text-xl font-black text-white leading-none">
+              <span className="font-mono text-xl font-black text-slate-800 leading-none">
                 {completionPercentage}%
               </span>
-              <span className="text-[8px] font-black text-slate-500 uppercase tracking-wider mt-0.5">
+              <span className="text-[8px] font-extrabold text-slate-400 uppercase tracking-widest mt-1">
                 Completed
               </span>
             </div>
           </div>
-          <span className="mt-2 text-[10px] font-bold text-slate-400 group-hover:text-white transition-colors uppercase tracking-wider">
-            Team Health Rate
-          </span>
         </div>
 
-        {/* Right column: Metric breakdown cards */}
-        <div className="md:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
-          
-          {/* Card: Completed */}
-          <div
-            onClick={() => onFilterChange(activeFilter === 'completed' ? 'all' : 'completed')}
-            className={`cursor-pointer rounded-r-xl border-y border-r border-white/5 border-l-4 p-4.5 transition-all duration-300 flex flex-col justify-between h-36 hover:scale-[1.02] ${
-              activeFilter === 'completed'
-                ? 'border-l-[#10b981] bg-[#10b981]/10 shadow-lg shadow-emerald-500/5'
-                : 'border-l-[#10b981] bg-[#0c1322]/30 hover:bg-[#10b981]/5'
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-400">Completed</span>
-              <span className="flex h-2 w-2 rounded-full bg-[#10b981]" />
-            </div>
-            <div className="mt-4">
-              <span className="text-3xl font-black text-white">{completedMembersCount}</span>
-              <span className="text-xs text-slate-500 ml-1">members</span>
-            </div>
-            <span className="text-[10px] text-slate-500 mt-1 block">Tasks 100% finished</span>
+        {/* Right side: Detailed Stats and Information */}
+        <div className="flex-1 space-y-4">
+          <div>
+            <h4 className="text-base font-bold text-slate-800 tracking-tight">Team Workspace Health & Delivery</h4>
+            <p className="text-xs text-slate-500 mt-1 leading-relaxed font-medium">
+              Overview of all tasks assigned to Kelompok 3 members. Status tracking helps monitor cloud-native microservice integration progress.
+            </p>
           </div>
 
-          {/* Card: In Progress */}
-          <div
-            onClick={() => onFilterChange(activeFilter === 'in_progress' ? 'all' : 'in_progress')}
-            className={`cursor-pointer rounded-r-xl border-y border-r border-white/5 border-l-4 p-4.5 transition-all duration-300 flex flex-col justify-between h-36 hover:scale-[1.02] ${
-              activeFilter === 'in_progress'
-                ? 'border-l-[#f59e0b] bg-[#f59e0b]/10 shadow-lg shadow-amber-500/5'
-                : 'border-l-[#f59e0b] bg-[#0c1322]/30 hover:bg-[#f59e0b]/5'
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-400">In Progress</span>
-              <span className="flex h-2 w-2 rounded-full bg-[#f59e0b]" />
+          <div className="flex flex-wrap gap-4 pt-2 border-t border-slate-100">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Contributors</span>
+              <span className="text-lg font-black text-slate-800 mt-0.5">{totalMembers}</span>
             </div>
-            <div className="mt-4">
-              <span className="text-3xl font-black text-white">{inProgressMembersCount}</span>
-              <span className="text-xs text-slate-500 ml-1">members</span>
+            <div className="h-8 w-px bg-slate-200 self-center" />
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Project Tasks</span>
+              <span className="text-lg font-black text-slate-800 mt-0.5">{totalTasks}</span>
             </div>
-            <span className="text-[10px] text-slate-500 mt-1 block">Tasks in progress</span>
+            <div className="h-8 w-px bg-slate-200 self-center" />
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Completed Tasks</span>
+              <span className="text-lg font-black text-indigo-600 mt-0.5">{completedTasks}</span>
+            </div>
+            <div className="h-8 w-px bg-slate-200 self-center" />
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Running Tasks</span>
+              <span className="text-lg font-black text-amber-500 mt-0.5">{inProgressMembersCount} active</span>
+            </div>
           </div>
-
-          {/* Card: No Todo (Not Started) */}
-          <div
-            onClick={() => onFilterChange(activeFilter === 'no_todo' ? 'all' : 'no_todo')}
-            className={`cursor-pointer rounded-r-xl border-y border-r border-white/5 border-l-4 p-4.5 transition-all duration-300 flex flex-col justify-between h-36 hover:scale-[1.02] ${
-              activeFilter === 'no_todo'
-                ? 'border-l-[#64748b] bg-[#64748b]/20 shadow-lg shadow-slate-500/5'
-                : 'border-l-[#64748b] bg-[#0c1322]/30 hover:bg-[#64748b]/10'
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-400">Not Started</span>
-              <span className="flex h-2 w-2 rounded-full bg-[#64748b]" />
-            </div>
-            <div className="mt-4">
-              <span className="text-3xl font-black text-white">{noTodoMembersCount}</span>
-              <span className="text-xs text-slate-500 ml-1">members</span>
-            </div>
-            <span className="text-[10px] text-slate-500 mt-1 block">Tasks not started</span>
-          </div>
-
         </div>
+
       </div>
-
-      {activeFilter !== 'all' && (
-        <div className="mt-4 flex items-center justify-between bg-cyan-500/5 border border-cyan-500/10 rounded-lg px-3 py-1.5 text-xs text-cyan-400">
-          <span>
-            Filtering contributors list by status: <strong className="capitalize font-bold">{activeFilter === 'no_todo' ? 'Not Started' : activeFilter === 'in_progress' ? 'In Progress' : 'Completed'}</strong>
-          </span>
-          <button 
-            onClick={() => onFilterChange('all')}
-            className="hover:text-white font-bold ml-2 underline cursor-pointer"
-          >
-            Clear Filter
-          </button>
-        </div>
-      )}
     </div>
   );
 }

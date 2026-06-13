@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Todo } from '@/app/actions/todos';
+import Toast from './Toast';
 
 interface TodoListProps {
   initialTodos: Todo[];
@@ -18,6 +19,7 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
   const [isPending, startTransition] = useTransition();
   const [filter, setFilter] = useState<FilterStatus>('all');
   const [todos, setTodos] = useState<Todo[]>(initialTodos);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   useEffect(() => {
     setTodos(initialTodos);
@@ -81,6 +83,7 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
           setNewDesc('');
           setShowDescInput(false);
           await fetchTodos();
+          setToast({ message: 'Task created successfully!', type: 'success' });
           onMutationSuccess?.();
         } else {
           setErrorMessage(data.error || 'Failed to create task.');
@@ -104,6 +107,7 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
         const data = await res.json();
         if (data.success) {
           await fetchTodos();
+          setToast({ message: 'Task status updated!', type: 'success' });
           onMutationSuccess?.();
         } else {
           setErrorMessage(data.error || 'Failed to update task.');
@@ -130,6 +134,7 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
         const data = await res.json();
         if (data.success) {
           await fetchTodos();
+          setToast({ message: 'Task status updated!', type: 'success' });
           onMutationSuccess?.();
         } else {
           setErrorMessage(data.error || 'Failed to update task.');
@@ -156,6 +161,7 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
         if (data.success) {
           setEditingTodo(null);
           await fetchTodos();
+          setToast({ message: 'Task changes saved successfully!', type: 'success' });
           onMutationSuccess?.();
         } else {
           setErrorMessage(data.error || 'Failed to save task edits.');
@@ -186,6 +192,7 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
         const data = await res.json();
         if (data.success) {
           await fetchTodos();
+          setToast({ message: 'Task deleted successfully!', type: 'success' });
           onMutationSuccess?.();
         } else {
           setErrorMessage(data.error || 'Failed to delete task.');
@@ -197,35 +204,32 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
   };
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900/60 p-6 backdrop-blur-xl transition-all duration-300">
-      {/* Glow background effect */}
-      <div className="absolute -left-20 -bottom-20 h-40 w-40 rounded-full bg-blue-500/10 blur-3xl pointer-events-none" />
-
+    <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition-all duration-300">
       {/* Header and Progress Metrics */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-white">
+            <h2 className="text-xl font-extrabold text-slate-800 tracking-tight">
               {ownerName ? `${ownerName}'s Tasks` : 'My Tasks'}
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-400 font-semibold mt-0.5">
               {readOnly ? 'Monitoring team member deliverables' : 'Manage your project deliverables'}
             </p>
           </div>
-          <span className="text-xs font-semibold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-lg border border-blue-500/20">
+          <span className="text-xs font-bold text-indigo-650 bg-indigo-50 px-2.5 py-1.5 rounded-xl border border-indigo-100 shadow-sm leading-none">
             {completedCount}/{totalCount} Completed
           </span>
         </div>
 
         {totalCount > 0 && (
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-xs font-medium text-slate-400">
+            <div className="flex items-center justify-between text-xs font-bold text-slate-500">
               <span>Progress Bar</span>
               <span>{completionPercentage}%</span>
             </div>
-            <div className="h-1.5 w-full rounded-full bg-slate-950 overflow-hidden">
+            <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden border border-slate-200/20">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-blue-500 to-[#00f0ff] transition-all duration-500 ease-out"
+                className="h-full rounded-full bg-gradient-to-r from-indigo-600 to-violet-500 transition-all duration-500 ease-out"
                 style={{ width: `${completionPercentage}%` }}
               />
             </div>
@@ -235,9 +239,9 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
 
       {/* Error Message */}
       {errorMessage && (
-        <div className="mt-4 rounded-xl border border-red-500/20 bg-red-500/10 p-3.5 text-xs text-red-400 flex items-center justify-between">
-          <span className="font-medium">{errorMessage}</span>
-          <button onClick={() => setErrorMessage(null)} className="text-red-400 hover:text-white font-bold ml-2">
+        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3.5 text-xs text-red-700 flex items-center justify-between">
+          <span className="font-semibold">{errorMessage}</span>
+          <button onClick={() => setErrorMessage(null)} className="text-red-500 hover:text-red-700 font-extrabold ml-2">
             ✕
           </button>
         </div>
@@ -246,7 +250,7 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
       {/* Create Todo Form */}
       {!readOnly && (
         <form onSubmit={handleCreateTodo} className="mt-6 space-y-3">
-          <div className="flex gap-2">
+          <div className="flex gap-2.5">
             <input
               type="text"
               required
@@ -254,15 +258,15 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
               disabled={isPending}
-              className="flex-1 rounded-xl border border-white/10 bg-slate-950/60 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition-all focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/40 disabled:opacity-50"
+              className="flex-1 rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 outline-none transition-all duration-300 focus:border-indigo-600 focus:bg-white focus:ring-4 focus:ring-indigo-100 disabled:opacity-50"
             />
             <button
               type="button"
               onClick={() => setShowDescInput(!showDescInput)}
-              className={`rounded-xl border px-3 py-2 text-xs font-medium transition-all ${
+              className={`rounded-xl border px-3.5 py-2.5 text-xs font-bold transition-all duration-300 cursor-pointer ${
                 showDescInput
-                  ? 'border-blue-500/30 bg-blue-500/10 text-blue-400'
-                  : 'border-white/10 bg-slate-950/40 text-slate-400 hover:bg-white/5'
+                  ? 'border-indigo-200 bg-indigo-50 text-indigo-650'
+                  : 'border-slate-200 bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-700'
               }`}
             >
               Details
@@ -270,7 +274,7 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
             <button
               type="submit"
               disabled={isPending || !newTitle.trim()}
-              className="rounded-xl bg-gradient-to-r from-blue-600 to-[#00f0ff] hover:from-blue-500 hover:to-[#00f0ff]/80 px-4 py-2.5 text-sm font-semibold text-white transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none shadow-md shadow-blue-500/10"
+              className="rounded-xl bg-gradient-to-r from-indigo-600 to-violet-500 hover:opacity-95 px-4.5 py-2.5 text-sm font-bold text-white transition-all duration-300 active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none shadow-sm shadow-indigo-100/50 cursor-pointer"
             >
               Add
             </button>
@@ -284,14 +288,14 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
               onChange={(e) => setNewDesc(e.target.value)}
               disabled={isPending}
               rows={2}
-              className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none transition-all focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/40 disabled:opacity-50 resize-none"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 outline-none transition-all duration-300 focus:border-indigo-600 focus:bg-white focus:ring-4 focus:ring-indigo-100 disabled:opacity-50 resize-none"
             />
           )}
         </form>
       )}
 
       {/* Filter Tabs */}
-      <div className="mt-6 flex border-b border-white/5 pb-2 overflow-x-auto gap-1">
+      <div className="mt-6 flex border-b border-slate-100 pb-2.5 overflow-x-auto gap-1">
         {[
           { id: 'all', label: 'All', count: totalCount },
           { id: 'pending', label: 'Not Started', count: pendingCount },
@@ -301,15 +305,15 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
           <button
             key={tab.id}
             onClick={() => setFilter(tab.id as FilterStatus)}
-            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all shrink-0 flex items-center gap-1.5 border ${
+            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all shrink-0 flex items-center gap-1.5 border cursor-pointer duration-300 ${
               filter === tab.id
-                ? 'bg-blue-500/10 text-[#00f0ff] border-blue-500/30 shadow-md shadow-blue-500/5'
-                : 'text-slate-400 hover:text-slate-200 border-transparent'
+                ? 'bg-indigo-50 text-indigo-650 border-indigo-200/80 shadow-sm shadow-indigo-100/20'
+                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50 border-transparent'
             }`}
           >
             <span>{tab.label}</span>
-            <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold transition-colors ${
-              filter === tab.id ? 'bg-blue-600 text-white' : 'bg-slate-950 text-slate-500'
+            <span className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold transition-colors ${
+              filter === tab.id ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400'
             }`}>
               {tab.count}
             </span>
@@ -318,11 +322,11 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
       </div>
 
       {/* Task List */}
-      <div className="mt-4 space-y-2.5 max-h-[360px] overflow-y-auto pr-1">
+      <div className="mt-4 space-y-3 max-h-[360px] overflow-y-auto pr-1">
         {filteredTodos.length === 0 ? (
-          <div className="py-10 text-center rounded-xl border border-dashed border-white/5 bg-slate-950/10">
+          <div className="py-10 text-center rounded-xl border border-dashed border-slate-200 bg-slate-50/50">
             <svg
-              className="mx-auto h-8 w-8 text-slate-600"
+              className="mx-auto h-8 w-8 text-slate-350"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -334,16 +338,16 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
                 d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
               />
             </svg>
-            <p className="mt-2 text-xs font-medium text-slate-500">No tasks found</p>
+            <p className="mt-2 text-xs font-bold text-slate-400">No tasks found</p>
           </div>
         ) : (
           filteredTodos.map((todo) => (
             <div
               key={todo.id}
-              className={`group relative flex items-start gap-3 rounded-xl border p-3.5 transition-all duration-200 ${
+              className={`group relative flex items-start gap-3.5 rounded-xl border p-4.5 transition-all duration-300 animate-scale-in hover:-translate-y-1 hover:shadow-premium ${
                 todo.status === 'completed'
-                  ? 'border-emerald-500/10 bg-emerald-500/[0.01] opacity-75 hover:opacity-100'
-                  : 'border-white/5 bg-slate-950/20 hover:border-white/10 hover:bg-slate-950/40'
+                  ? 'border-emerald-100 bg-emerald-50/20 opacity-90'
+                  : 'border-slate-200 bg-white hover:border-slate-350'
               }`}
             >
               {/* Checkbox */}
@@ -351,10 +355,10 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
                 type="button"
                 onClick={() => !readOnly && handleToggleComplete(todo)}
                 disabled={isPending || readOnly}
-                className={`mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full border transition-all ${
+                className={`mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full border transition-all duration-300 ${
                   todo.status === 'completed'
-                    ? 'border-emerald-500 bg-emerald-500 text-white shadow shadow-emerald-500/20'
-                    : 'border-white/20 bg-slate-900' + (readOnly ? '' : ' group-hover:border-blue-500/50 cursor-pointer')
+                    ? 'border-emerald-500 bg-emerald-500 text-white shadow shadow-emerald-500/20 cursor-pointer'
+                    : 'border-slate-300 bg-white' + (readOnly ? '' : ' group-hover:border-indigo-500/50 cursor-pointer')
                 }`}
               >
                 {todo.status === 'completed' && (
@@ -367,16 +371,16 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
               {/* Title & Desc */}
               <div className="flex-1 min-w-0">
                 <h4
-                  className={`text-sm font-semibold tracking-tight break-words transition-all ${
+                  className={`text-sm font-bold tracking-tight break-words transition-all duration-300 ${
                     todo.status === 'completed'
-                      ? 'text-slate-400 line-through decoration-slate-600'
-                      : 'text-white'
+                      ? 'text-slate-400 line-through decoration-slate-300'
+                      : 'text-slate-800'
                   }`}
                 >
                   {todo.title}
                 </h4>
                 {todo.description && (
-                  <p className="mt-0.5 text-xs text-slate-400 break-words leading-relaxed">
+                  <p className="mt-1 text-xs text-slate-500 break-words leading-relaxed font-medium">
                     {todo.description}
                   </p>
                 )}
@@ -387,12 +391,12 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
                 {/* Status Cycle Badge */}
                 {readOnly ? (
                   <span
-                    className={`inline-flex items-center rounded px-2 py-0.5 text-[10px] font-bold border ${
+                    className={`inline-flex items-center rounded-lg px-2.5 py-1 text-[10px] font-extrabold border ${
                       todo.status === 'completed'
-                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
                         : todo.status === 'in_progress'
-                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                        : 'bg-slate-500/10 text-slate-400 border-slate-500/20'
+                        ? 'bg-amber-50 text-amber-700 border-amber-105'
+                        : 'bg-slate-100 text-slate-600 border-slate-200'
                     }`}
                   >
                     {todo.status === 'completed'
@@ -407,12 +411,12 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
                       type="button"
                       onClick={() => handleCycleStatus(todo)}
                       disabled={isPending}
-                      className={`inline-flex items-center rounded px-2 py-0.5 text-[10px] font-bold transition-all active:scale-[0.98] border ${
+                      className={`inline-flex items-center rounded-lg px-2.5 py-1 text-[10px] font-extrabold transition-all active:scale-[0.98] border cursor-pointer ${
                         todo.status === 'completed'
-                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
                           : todo.status === 'in_progress'
-                          ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                          : 'bg-slate-500/10 text-slate-400 border-slate-500/20'
+                          ? 'bg-amber-50 text-amber-700 border-amber-105'
+                          : 'bg-slate-100 text-slate-650 border-slate-200 hover:bg-slate-200/50'
                       }`}
                     >
                       {todo.status === 'completed'
@@ -427,9 +431,9 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
                       type="button"
                       onClick={() => openEditModal(todo)}
                       disabled={isPending}
-                      className="rounded-lg p-1 text-slate-500 hover:bg-white/5 hover:text-white transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer"
+                      className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer"
                     >
-                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -443,9 +447,9 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
                       type="button"
                       onClick={() => handleDeleteTodo(todo.id)}
                       disabled={isPending}
-                      className="rounded-lg p-1 text-slate-500 hover:bg-red-500/10 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer"
+                      className="rounded-lg p-1 text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer"
                     >
-                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -462,26 +466,26 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
       </div>
 
       {!readOnly && (
-        <div className="mt-8 pt-6 border-t border-white/5 text-center flex flex-col items-center justify-center">
-          <svg className="h-6 w-6 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+        <div className="mt-8 pt-6 border-t border-slate-100 text-center flex flex-col items-center justify-center">
+          <svg className="h-6 w-6 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
           </svg>
-          <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mt-2">Add more infrastructure tasks</span>
+          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-2">Add more infrastructure tasks</span>
         </div>
       )}
 
       {/* Edit Todo Modal */}
       {editingTodo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-slate-900 p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/30 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4 animate-scale-in">
             <div>
-              <h3 className="text-lg font-bold text-white">Edit Task</h3>
-              <p className="text-xs text-slate-400">Update task details and completion status</p>
+              <h3 className="text-lg font-bold text-slate-800">Edit Task</h3>
+              <p className="text-xs text-slate-500">Update task details and completion status</p>
             </div>
 
             <form onSubmit={handleEditSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                   Title
                 </label>
                 <input
@@ -490,12 +494,12 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
                   disabled={isPending}
-                  className="block w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition-all focus:border-blue-500/80"
+                  className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 outline-none transition-all focus:border-indigo-650 focus:bg-white"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                   Description
                 </label>
                 <textarea
@@ -503,19 +507,19 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
                   onChange={(e) => setEditDesc(e.target.value)}
                   disabled={isPending}
                   rows={3}
-                  className="block w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none transition-all focus:border-blue-500/80 resize-none"
+                  className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 outline-none transition-all focus:border-indigo-650 focus:bg-white resize-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                   Status
                 </label>
                 <select
                   value={editStatus}
                   onChange={(e) => setEditStatus(e.target.value as 'pending' | 'in_progress' | 'completed')}
                   disabled={isPending}
-                  className="block w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-2.5 text-sm text-white outline-none transition-all focus:border-blue-500/80"
+                  className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none transition-all focus:border-indigo-650 focus:bg-white"
                 >
                   <option value="pending">Not Started</option>
                   <option value="in_progress">In Progress</option>
@@ -528,14 +532,14 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
                   type="button"
                   onClick={() => setEditingTodo(null)}
                   disabled={isPending}
-                  className="rounded-xl border border-white/10 bg-slate-950/40 px-4 py-2.5 text-xs font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-all"
+                  className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isPending || !editTitle.trim()}
-                  className="rounded-xl bg-gradient-to-r from-blue-600 to-emerald-500 hover:from-blue-500 hover:to-emerald-400 px-4 py-2.5 text-xs font-semibold text-white transition-all"
+                  className="rounded-xl bg-gradient-to-r from-indigo-650 to-emerald-650 px-4 py-2.5 text-xs font-bold text-white transition-all hover:opacity-95 cursor-pointer shadow-sm shadow-indigo-100"
                 >
                   Save Changes
                 </button>
@@ -543,6 +547,15 @@ export default function TodoList({ initialTodos, readOnly = false, ownerName, on
             </form>
           </div>
         </div>
+      )}
+
+      {/* Confirmation Toast */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
       )}
     </div>
   );

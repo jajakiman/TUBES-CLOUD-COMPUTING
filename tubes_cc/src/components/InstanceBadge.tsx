@@ -27,9 +27,9 @@ export default function InstanceBadge() {
   }, []);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/5 bg-[#090d16] p-6 shadow-xl transition-all duration-300 hover:border-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/5">
-      {/* Background radial gradient glow */}
-      <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full bg-emerald-500/5 blur-3xl pointer-events-none" />
+    <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm hover:shadow-md transition-all duration-300 hover:border-indigo-300">
+      {/* Soft abstract background gradient block */}
+      <div className="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-gradient-to-tr from-indigo-500/5 to-violet-500/5 blur-xl pointer-events-none" />
 
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-3">
@@ -40,32 +40,32 @@ export default function InstanceBadge() {
           </div>
 
           <div>
-            <p className="text-[10px] font-black tracking-widest text-slate-500 uppercase">
+            <p className="text-[10px] font-extrabold tracking-widest text-slate-400 uppercase leading-none">
               Active Routing Node
             </p>
-            <h3 className="font-mono text-base font-bold text-white tracking-tight mt-0.5">
+            <h3 className="font-mono text-sm font-bold text-slate-800 tracking-tight mt-1">
               {instanceId}
             </h3>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-white/5">
+        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100">
           {/* AWS ALB Indicator Badge */}
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-blue-400 border border-blue-500/15">
-            <svg className="h-1.5 w-1.5 fill-blue-400" viewBox="0 0 6 6" aria-hidden="true">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-2.5 py-0.5 text-[10px] font-bold text-indigo-650 border border-indigo-100">
+            <svg className="h-1.5 w-1.5 fill-indigo-600 animate-pulse" viewBox="0 0 6 6" aria-hidden="true">
               <circle cx="3" cy="3" r="3" />
             </svg>
             AWS ALB Directed
           </span>
 
-          <span className="text-[10px] font-medium text-slate-500">
-            Refreshed at: <span className="font-mono text-slate-400">{timestamp}</span>
+          <span className="text-[10px] font-medium text-slate-400">
+            Refreshed: <span className="font-mono text-slate-500">{timestamp}</span>
           </span>
         </div>
       </div>
 
-      <div className="mt-3.5 border-t border-white/5 pt-3">
-        <p className="text-[11px] text-slate-500 leading-relaxed">
+      <div className="mt-3 border-t border-slate-100 pt-3">
+        <p className="text-[10.5px] text-slate-500 leading-relaxed">
           Traffic is processed by the monolith application deployed on a stateless EC2 scaling group.
         </p>
       </div>
