@@ -53,6 +53,7 @@ CREATE TABLE `todos` (
   `user_id` INT NOT NULL,
   `title` VARCHAR(255) NOT NULL,
   `description` TEXT NULL,
+  `category` VARCHAR(50) NOT NULL DEFAULT 'general',
   `status` VARCHAR(50) NOT NULL DEFAULT 'pending', -- 'pending', 'in_progress', 'completed'
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

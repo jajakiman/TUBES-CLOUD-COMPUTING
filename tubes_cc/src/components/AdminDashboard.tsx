@@ -14,23 +14,28 @@ interface AdminDashboardProps {
   initialMembers: Member[];
 }
 
+type AdminActiveTab = 'dashboard' | 'contributors';
+
 export default function AdminDashboard({
   sessionUser,
   initialMembers,
 }: AdminDashboardProps) {
   const router = useRouter();
-  const [members, setMembers] = useState<Member[]>(initialMembers);
+  
+  // Layout views state
+  const [activeTab, setActiveTab] = useState<AdminActiveTab>('dashboard');
   const [activeFilter, setActiveFilter] = useState<'all' | 'no_todo' | 'in_progress' | 'completed'>('all');
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'contributors'>('dashboard');
+  const [members, setMembers] = useState<Member[]>(initialMembers);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
-  // State for admin auditing
+  // Auditing drawer state
   const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
   const [selectedMemberName, setSelectedMemberName] = useState<string | null>(null);
   const [auditedTodos, setAuditedTodos] = useState<Todo[]>([]);
   const [isLoadingAudited, setIsLoadingAudited] = useState(false);
 
-  // Fetch members to get latest stats
+  // Fetch contributors to get latest status
   const fetchMembers = async () => {
     try {
       const res = await fetch('/api/members');
@@ -43,12 +48,12 @@ export default function AdminDashboard({
     }
   };
 
-  // Poll members stats periodically or when selecting to audit
+  // Poll contributors stats
   useEffect(() => {
     fetchMembers();
   }, [selectedMemberId]);
 
-  // Fetch audited todos when selecting a team member
+  // Fetch audited member todos when selected
   useEffect(() => {
     if (selectedMemberId === null) {
       setAuditedTodos([]);
@@ -75,7 +80,7 @@ export default function AdminDashboard({
     loadAuditedTodos();
   }, [selectedMemberId]);
 
-  // Helper to get name initials (e.g., "Muhammad Zaky" -> "MZ")
+  // Helper to get initials
   const getInitials = (name: string) => {
     const parts = name.split(' ');
     if (parts.length >= 2) {
@@ -84,37 +89,20 @@ export default function AdminDashboard({
     return name.slice(0, 2).toUpperCase();
   };
 
-  // Helper to get unique avatar gradient
-  const getAvatarGradient = (id: number) => {
-    const gradients = [
-      'from-blue-500 to-indigo-500',
-      'from-indigo-500 to-violet-500',
-      'from-violet-500 to-purple-500',
-      'from-fuchsia-500 to-pink-500',
-      'from-pink-500 to-rose-500'
-    ];
-    return gradients[id % gradients.length];
-  };
-
-  // Filter members list based on filter
+  // Filter members based on selection
   const filteredMembers = members.filter((member) => {
     if (activeFilter === 'all') return true;
     return member.status === activeFilter;
   });
 
-  // Handle member row clicks
+  // Handle contributor card clicks
   const handleMemberClick = (member: Member) => {
-    if (selectedMemberId === member.id) {
-      setSelectedMemberId(null);
-      setSelectedMemberName(null);
-    } else {
-      setSelectedMemberId(member.id);
-      setSelectedMemberName(member.name);
-      setToast({ message: `Auditing tasks for ${member.name}`, type: 'info' });
-    }
+    setSelectedMemberId(member.id);
+    setSelectedMemberName(member.name);
+    setToast({ message: `Initiating audit for ${member.name}`, type: 'info' });
   };
 
-  // Sign out via Auth Microservice
+  // Sign out via Auth
   const handleSignOut = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -132,456 +120,416 @@ export default function AdminDashboard({
     }
   };
 
+  // Helper to resolve roles and bios
+  const getMemberDetails = (name: string) => {
+    let role = 'Software Engineer';
+    let bio = 'Responsible for codebase development and state modules.';
+    if (name.toLowerCase().includes('zaky')) {
+      role = 'Cloud System Architect';
+      bio = 'Leads local database design and multi-instance cloud deployments.';
+    } else if (name.toLowerCase().includes('hafiz')) {
+      role = 'DevOps / CI-CD Specialist';
+      bio = 'Handles container configuration and EC2 stateless auto-scaling.';
+    } else if (name.toLowerCase().includes('haris')) {
+      role = 'Database Engineer';
+      bio = 'Designs schema migrations, indexing optimization, and query plans.';
+    } else if (name.toLowerCase().includes('djordhi')) {
+      role = 'Frontend Developer';
+      bio = 'Fosters visual aesthetics, glassmorphism designs, and UI responsiveness.';
+    } else if (name.toLowerCase().includes('farid')) {
+      role = 'Fullstack Developer';
+      bio = 'Responsible for Next.js server actions and state sync.';
+    }
+    return { role, bio };
+  };
+
   return (
-    <div className="flex min-h-screen bg-[#f1f5f9] text-slate-800 font-sans select-none p-4 gap-6">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white font-sans select-none antialiased relative overflow-x-hidden">
       
-      {/* 1. Sidebar Layout */}
-      <aside className="w-64 bg-white/95 border border-slate-200/60 rounded-3xl flex flex-col justify-between shrink-0 hidden md:flex shadow-premium">
-        <div className="p-6 space-y-8">
-          {/* Logo / Brand */}
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-50 to-indigo-100/50 border border-indigo-100/80 text-indigo-660 shadow-sm">
-              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <path d="M9 17V9h6v8" />
+      {/* Dynamic animations style block */}
+      <style>{`
+        @keyframes floatGiga {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-4px); }
+        }
+        @keyframes floatMini {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
+        @keyframes floatPeeker {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-3px); }
+        }
+
+        .animate-float-giga {
+          animation: floatGiga 4s ease-in-out infinite;
+        }
+        .animate-float-mini {
+          animation: floatMini 3s ease-in-out infinite;
+        }
+        .animate-float-peeker {
+          animation: floatPeeker 3.5s ease-in-out infinite;
+        }
+      `}</style>
+
+      {/* Decorative ambient background glows */}
+      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+
+      {/* 1. TOP STICKY HEADER (Mobbin Header Layout) */}
+      <header className="h-16 bg-slate-950/40 border-b border-white/10 px-6 md:px-8 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md shadow-2xl">
+        
+        {/* Brand Brand & Logo */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="p-1 rounded hover:bg-white/5 text-slate-300 md:hidden cursor-pointer"
+          >
+            <svg className="w-5.5 h-5.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
+            </svg>
+          </button>
+
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-md shadow-indigo-500/20 select-none shrink-0">
+              <svg viewBox="0 0 32 32" className="w-6 h-6">
+                {/* Monitor outer */}
+                <rect x="5" y="7" width="22" height="18" rx="4" fill="#ffffff" />
+                {/* Screen inner */}
+                <rect x="8" y="10" width="16" height="12" rx="2" fill="#4f46e5" />
+                {/* Tiny eyes */}
+                <circle cx="12" cy="15" r="1.2" fill="#22d3ee" />
+                <circle cx="20" cy="15" r="1.2" fill="#22d3ee" />
+                {/* Tiny stand */}
+                <rect x="13" y="25" width="6" height="2" fill="#ffffff" />
               </svg>
             </div>
             <div className="flex flex-col">
-              <h2 className="text-sm font-extrabold tracking-wide text-slate-800 uppercase leading-none">
-                Cloud Monolith
-              </h2>
-              <span className="text-[8px] text-slate-400 font-bold tracking-widest block mt-1.5 uppercase">
-                Admin Portal
+              <h1 className="text-xs font-black tracking-wider text-white uppercase leading-none">
+                Kelompok 3 Cloud Portal
+              </h1>
+              <span className="text-[8.5px] text-slate-400 font-extrabold tracking-wider block mt-1 uppercase leading-none">
+                Admin Console
               </span>
             </div>
           </div>
-
-          {/* Navigation links */}
-          <nav className="space-y-1.5">
-            <button
-              onClick={() => setActiveTab('dashboard')}
-              className={`flex items-center gap-3.5 w-full text-left rounded-xl px-4 py-3 text-xs font-bold transition-premium cursor-pointer ${
-                activeTab === 'dashboard'
-                  ? 'bg-indigo-600 text-white shadow-premium shadow-glow-indigo'
-                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
-              }`}
-            >
-              <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-              </svg>
-              Dashboard
-            </button>
-            <button
-              onClick={() => setActiveTab('contributors')}
-              className={`flex items-center gap-3.5 w-full text-left rounded-xl px-4 py-3 text-xs font-bold transition-premium cursor-pointer ${
-                activeTab === 'contributors'
-                  ? 'bg-indigo-600 text-white shadow-premium shadow-glow-indigo'
-                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
-              }`}
-            >
-              <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-              Contributors
-            </button>
-          </nav>
         </div>
 
-        {/* Bottom logout */}
-        <div className="p-6 border-t border-slate-100 bg-slate-50/50 rounded-b-3xl">
-          <form onSubmit={handleSignOut}>
-            <button
-              type="submit"
-              className="flex items-center gap-3.5 w-full text-left rounded-xl px-4 py-3 text-xs font-bold text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-premium cursor-pointer"
-            >
-              <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Logout
-            </button>
-          </form>
-        </div>
-      </aside>
 
-      {/* 2. Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-white border border-slate-200/60 rounded-3xl shadow-premium">
+
+        {/* Right: Telemetry status & User Profile */}
+        <div className="flex items-center gap-6">
+          {/* Latency Telemetry */}
+          <div className="hidden sm:flex items-center gap-1.5 rounded-lg border border-white/10 px-2.5 py-1 text-[10px] font-bold text-slate-400 bg-slate-900/40 shadow-xs">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>DB Online</span>
+            <span className="mx-1 text-white/10">|</span>
+            <span className="font-mono text-slate-350">14ms ping</span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col items-end">
+              <span className="text-xs font-bold text-white leading-none">{sessionUser}</span>
+              <span className="text-[9px] font-bold text-rose-400 uppercase tracking-widest mt-1 block">Administrator</span>
+            </div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-950 font-bold text-white text-[11px] uppercase shadow-sm border border-rose-900/40">
+              {sessionUser[0]}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* 2. MAIN WORKSPACE directory structure (Left Navigation Sidebar + Main Board) */}
+      <div className="flex-1 flex w-full">
         
-        {/* Top Header Navbar */}
-        <header className="h-18 border-b border-slate-100 px-8 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-6">
-            <h2 className="text-xs font-extrabold text-indigo-600 uppercase tracking-widest hidden sm:block">
-              Cloud Monolith Dashboard
-            </h2>
-
-            {/* Search Input */}
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+        {/* Left Side Directories Sidebar (Desktop) */}
+        <aside className="w-60 bg-slate-900/30 border-r border-white/10 backdrop-blur-md shrink-0 hidden md:flex flex-col justify-between sticky top-16 h-[calc(100vh-64px)] p-5 z-20">
+          <div className="space-y-6">
+            
+            {/* Navigation title */}
+            <div>
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                Admin Console
               </span>
-              <input
-                type="text"
-                placeholder="Search resources..."
-                className="w-56 rounded-xl bg-slate-50 border border-slate-200/80 pl-9 pr-4 py-2 text-xs text-slate-800 placeholder-slate-400 outline-none focus:border-indigo-500 focus:bg-white transition-all duration-350 focus:ring-2 focus:ring-indigo-100/50"
-              />
             </div>
+
+            {/* Folder Tabs */}
+            <nav className="space-y-1">
+              <button
+                onClick={() => setActiveTab('dashboard')}
+                className={`flex items-center gap-3 w-full text-left rounded-lg px-3.5 py-2.5 text-xs font-bold transition-all border ${
+                  activeTab === 'dashboard'
+                    ? 'bg-indigo-600 text-white border-indigo-500/30 shadow-md shadow-indigo-500/10'
+                    : 'text-slate-400 hover:text-white hover:bg-white/5 border-transparent'
+                }`}
+              >
+                <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2" />
+                </svg>
+                Overview Console
+              </button>
+
+              <button
+                onClick={() => setActiveTab('contributors')}
+                className={`flex items-center gap-3 w-full text-left rounded-lg px-3.5 py-2.5 text-xs font-bold transition-all border ${
+                  activeTab === 'contributors'
+                    ? 'bg-indigo-600 text-white border-indigo-500/30 shadow-md shadow-indigo-500/10'
+                    : 'text-slate-400 hover:text-white hover:bg-white/5 border-transparent'
+                }`}
+              >
+                <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Contributor Audits
+              </button>
+            </nav>
+
+            {/* Micro AWS info in sidebar */}
+            <div className="pt-4 border-t border-white/5 space-y-2.5">
+              <span className="text-[8.5px] font-black text-slate-400 uppercase tracking-widest block">ALB Telemetry</span>
+              <div className="p-3 bg-slate-950/60 border border-white/10 rounded-lg text-[10px] space-y-1.5 font-bold">
+                <div className="flex justify-between text-slate-400">
+                  <span>Routing:</span>
+                  <span className="text-white">Stateless</span>
+                </div>
+                <div className="flex justify-between text-slate-400">
+                  <span>Active Nodes:</span>
+                  <span className="text-white">5 EC2 Nodes</span>
+                </div>
+              </div>
+            </div>
+
           </div>
 
-
-        </header>
-
-        {/* Scrollable Main Area */}
-        <main className="flex-1 overflow-y-auto p-8 space-y-8">
-          {activeTab === 'dashboard' ? (
-            <div className="space-y-8 animate-slide-up-fade">
-              {/* Welcome Section */}
-              <div>
-                <h2 className="text-3xl font-black text-slate-900 tracking-tight">
-                  Welcome back, <span className="bg-gradient-to-r from-indigo-600 to-violet-550 bg-clip-text text-transparent">{sessionUser}</span> 👋
-                </h2>
-                <p className="text-sm text-slate-500 mt-1.5 font-semibold">
-                  Monitor system integrity and cloud resource allocation across distributed nodes.
-                </p>
+          {/* Bottom logout block */}
+          <div className="pt-4 border-t border-white/5">
+            <form onSubmit={handleSignOut}>
+              <button
+                type="submit"
+                className="flex items-center gap-3 w-full text-left rounded-lg px-3.5 py-2.5 text-xs font-bold text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all border border-transparent cursor-pointer"
+              >
+                <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Sign Out
+              </button>
+            </form>
+          </div>
+        </aside>        {/* Scrollable Main Area Panel */}
+        <main className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 min-w-0 bg-transparent">
+          
+          {/* TAB: DASHBOARD OVERVIEW */}
+          {activeTab === 'dashboard' && (
+            <div className="space-y-8 animate-slide-up-fade max-w-5xl">
+              <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                <div>
+                  <h2 className="text-xl font-extrabold text-white tracking-tight leading-none uppercase flex items-center gap-2.5">
+                    Overview Console
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-2 font-medium">
+                    Review project deliverables, perform team audits, and monitor virtual server metrics.
+                  </p>
+                </div>
+                {/* Floating cloud monster mascot */}
+                <div className="relative group select-none hidden sm:block">
+                  <svg viewBox="0 0 100 60" className="w-16 h-12 animate-float-mini">
+                    <path d="M 20 40 C 15 40, 10 35, 15 28 C 15 15, 35 10, 48 20 C 58 10, 72 15, 70 28 C 78 28, 80 35, 72 40 C 65 40, 25 40, 20 40 Z" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="1.5" />
+                    <circle cx="38" cy="27" r="2" fill="#22d3ee" className="animate-pulse" />
+                    <circle cx="48" cy="27" r="2" fill="#22d3ee" className="animate-pulse" />
+                    <path d="M 41 31 Q 43 33 45 31" fill="none" stroke="#475569" strokeWidth="1" />
+                  </svg>
+                  <div className="absolute -top-6 -right-2 bg-indigo-600/90 text-white text-[7.5px] font-bold px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-indigo-500/30">
+                    Cloud Node Active
+                  </div>
+                </div>
               </div>
 
-              {/* Team Progress Overview */}
+              {/* Team Progress Ring panel */}
               <TeamVisualizer
                 members={members}
                 activeFilter={activeFilter}
                 onFilterChange={setActiveFilter}
               />
 
-              {/* Grid: Contributors Table & Audit Panel */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Cluster diagnostics and diagnostics widgets */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                 
-                {/* Left Column: Project Contributors Table */}
-                <div className="lg:col-span-7">
-                  <section className="space-y-4">
-                    <div>
-                      <h3 className="text-xl font-bold text-slate-800 tracking-tight">Project Contributors</h3>
-                      <p className="text-xs text-slate-400 font-semibold mt-0.5">
-                        Click on any contributor row to audit their tasks and view system permissions.
-                      </p>
-                    </div>
-
-                    {/* Table */}
-                    <div className="rounded-2xl border border-slate-200/80 bg-white overflow-hidden shadow-sm">
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse text-xs">
-                          <thead>
-                            <tr className="border-b border-slate-150 bg-slate-50 text-slate-500 font-bold tracking-wider uppercase">
-                              <th className="px-6 py-4">No</th>
-                              <th className="px-6 py-4">Full Name</th>
-                              <th className="px-6 py-4">Class</th>
-                              <th className="px-6 py-4">Task Status</th>
-                              <th className="px-6 py-4">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-100">
-                            {filteredMembers.map((member, idx) => {
-                              const initials = getInitials(member.name);
-                              const isSelected = selectedMemberId === member.id;
-                              const avatarGradient = getAvatarGradient(member.id);
-                              return (
-                                <tr
-                                  key={member.id}
-                                  onClick={() => handleMemberClick(member)}
-                                  className={`group hover:bg-slate-50/70 transition-colors cursor-pointer ${
-                                    isSelected ? 'bg-indigo-50/40' : ''
-                                  }`}
-                                >
-                                  <td className="px-6 py-4 font-mono font-bold text-indigo-650">
-                                    {idx + 1}
-                                  </td>
-                                  <td className="px-6 py-4 flex items-center gap-3">
-                                    <div className={`flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr ${avatarGradient} font-bold text-white shadow-sm text-[10px]`}>
-                                      {initials}
-                                    </div>
-                                    <span className="font-semibold text-slate-800 group-hover:text-indigo-600 transition-colors">
-                                      {member.name}
-                                    </span>
-                                  </td>
-                                  <td className="px-6 py-4 text-slate-500 font-semibold">
-                                    {member.class_room}
-                                  </td>
-                                  <td className="px-6 py-4">
-                                    {member.status === 'no_todo' && (
-                                      <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 border border-slate-200 px-3 py-1 text-slate-655 font-bold">
-                                        <svg className="h-1.5 w-1.5 fill-slate-450" viewBox="0 0 6 6">
-                                          <circle cx="3" cy="3" r="3" />
-                                        </svg>
-                                        Not Started
-                                      </span>
-                                    )}
-                                    {member.status === 'in_progress' && (
-                                      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-amber-700 font-bold">
-                                        <svg className="h-1.5 w-1.5 fill-amber-500 animate-pulse" viewBox="0 0 6 6">
-                                          <circle cx="3" cy="3" r="3" />
-                                        </svg>
-                                        In Progress ({member.completed_tasks}/{member.total_tasks})
-                                      </span>
-                                    )}
-                                    {member.status === 'completed' && (
-                                      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-emerald-700 font-bold">
-                                        <svg className="h-1.5 w-1.5 fill-emerald-500" viewBox="0 0 6 6">
-                                          <circle cx="3" cy="3" r="3" />
-                                        </svg>
-                                        Completed ({member.completed_tasks}/{member.total_tasks})
-                                      </span>
-                                    )}
-                                  </td>
-                                  <td className="px-6 py-4">
-                                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-55 border border-slate-200 text-slate-400 hover:text-slate-700 transition-colors shadow-sm">
-                                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 9l3 3-3 3m5 0h3" />
-                                      </svg>
-                                    </span>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </section>
+                {/* ALB active info */}
+                <div className="md:col-span-4">
+                  <InstanceBadge />
                 </div>
 
-                {/* Right Column: Audit Panel & diagnostics info */}
-                <div className="lg:col-span-5 space-y-6">
-                  {selectedMemberId !== null ? (
-                    isLoadingAudited ? (
-                      <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm min-h-[350px]">
-                        {/* pulsing background particles */}
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none animate-pulse" />
+                {/* Performance stats bento */}
+                <div className="md:col-span-5 bg-slate-900/40 border border-white/10 backdrop-blur-md rounded-xl p-5 shadow-2xl space-y-4">
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    System Telemetry Status
+                  </h3>
 
-                        {/* Checklist Skeleton Layout */}
-                        <div className="space-y-6 animate-pulse">
-                          {/* Header skeleton */}
-                          <div className="flex items-center justify-between">
-                            <div className="space-y-2">
-                              <div className="h-5 w-36 rounded-md bg-slate-100" />
-                              <div className="h-3.5 w-56 rounded bg-slate-200" />
-                            </div>
-                            <div className="h-6 w-24 rounded-lg bg-slate-100" />
-                          </div>
-
-                          {/* Progress bar skeleton */}
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <div className="h-3 w-16 rounded bg-slate-200" />
-                              <div className="h-3 w-8 rounded bg-slate-200" />
-                            </div>
-                            <div className="h-1.5 w-full rounded-full bg-slate-100" />
-                          </div>
-
-                          {/* Filter pills skeleton */}
-                          <div className="flex gap-2 border-b border-slate-100 pb-3">
-                            <div className="h-7 w-12 rounded-lg bg-slate-100" />
-                            <div className="h-7 w-20 rounded-lg bg-slate-100" />
-                            <div className="h-7 w-20 rounded-lg bg-slate-100" />
-                            <div className="h-7 w-18 rounded-lg bg-slate-100" />
-                          </div>
-
-                          {/* Task row list skeleton */}
-                          <div className="space-y-3">
-                            {[1, 2].map((i) => (
-                              <div key={i} className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/50 p-4">
-                                <div className="h-4.5 w-4.5 rounded-full bg-slate-200" />
-                                <div className="flex-1 space-y-2">
-                                  <div className="h-4 w-1/3 rounded bg-slate-100" />
-                                  <div className="h-3 w-2/3 rounded bg-slate-200" />
-                                </div>
-                                <div className="h-5 w-16 rounded bg-slate-200" />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Central glow badge */}
-                        <div className="absolute inset-0 flex items-center justify-center bg-slate-50/20 backdrop-blur-[1px]">
-                          <div className="relative flex flex-col items-center justify-center p-5 rounded-2xl border border-indigo-200 bg-white shadow-xl max-w-[200px] text-center">
-                            <span className="relative flex h-3 w-3 mb-3">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-650"></span>
-                            </span>
-                            <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">Syncing Audit</span>
-                            <span className="text-[10px] text-slate-400 mt-1 leading-normal">Connecting stateless node payload...</span>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <TodoList
-                        initialTodos={auditedTodos}
-                        readOnly={true}
-                        ownerName={selectedMemberName || 'Contributor'}
-                      />
-                    )
-                  ) : (
-                    /* Admin Dashboard Monitor Placeholder */
-                    <div className="relative overflow-hidden rounded-2xl border border-dashed border-slate-200 bg-slate-55/50 p-12 text-center min-h-[250px] flex flex-col items-center justify-center shadow-inner h-[280px] animate-scale-in">
-                      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 shadow-sm">
-                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                      </div>
-                      <h4 className="mt-4 text-sm font-bold text-slate-800">Monitoring Mode</h4>
-                      <p className="mt-1.5 text-xs text-slate-400 max-w-[240px] mx-auto leading-relaxed font-semibold">
-                        Select a contributor from the table to audit their live tasks and performance logs.
-                      </p>
+                  <div className="space-y-3.5 text-xs font-bold text-slate-205">
+                    <div className="flex justify-between items-center">
+                      <span>Database Cluster Node</span>
+                      <span className="text-emerald-400 font-extrabold flex items-center gap-1.5">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        ONLINE
+                      </span>
                     </div>
-                  )}
 
-                  {/* AWS EC2 Instance Badge */}
-                  <InstanceBadge />
+                    <div className="flex justify-between items-center">
+                      <span>Response Latency</span>
+                      <span className="text-slate-350 font-mono">14 ms</span>
+                    </div>
 
-                  {/* System Diagnostics Card */}
-                  <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                    {/* Background Radial Glow */}
-                    <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full bg-indigo-500/5 blur-3xl pointer-events-none" />
-
-                    <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 leading-none">
-                      Cluster Performance
-                    </h3>
-
-                    <div className="space-y-4 text-xs font-semibold">
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-505">Database Connection</span>
-                        <span className="text-emerald-600 font-bold flex items-center gap-1">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                          Operational
-                        </span>
+                    {/* CPU allocation */}
+                    <div className="space-y-1.5 border-t border-white/5 pt-2.5">
+                      <div className="flex justify-between text-[9px] text-slate-400 uppercase">
+                        <span>CPU Load</span>
+                        <span className="font-mono text-slate-300">8.4%</span>
                       </div>
-
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-500">API Response Latency</span>
-                        <span className="text-indigo-650 font-mono font-bold">14 ms</span>
+                      <div className="h-1.5 w-full bg-slate-950/60 rounded-full overflow-hidden border border-white/5">
+                        <div className="h-full bg-indigo-500" style={{ width: '8.4%' }} />
                       </div>
+                    </div>
 
-                      {/* Node Utilization Bar */}
-                      <div className="space-y-1.5 pt-2 border-t border-slate-100">
-                        <div className="flex justify-between text-slate-500 text-[11px]">
-                          <span>Virtual CPU Load</span>
-                          <span className="font-mono text-indigo-605">8.4%</span>
-                        </div>
-                        <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden border border-slate-200/10">
-                          <div className="h-full rounded-full bg-gradient-to-r from-indigo-600 to-violet-500" style={{ width: '8.4%' }} />
-                        </div>
+                    {/* RAM usage */}
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between text-[9px] text-slate-400 uppercase">
+                        <span>Memory Load</span>
+                        <span className="font-mono text-slate-300">42%</span>
                       </div>
-
-                      {/* Memory Allocation Bar */}
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between text-slate-500 text-[11px]">
-                          <span>Memory Allocation</span>
-                          <span className="font-mono text-indigo-605">42%</span>
-                        </div>
-                        <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden border border-slate-200/10">
-                          <div className="h-full rounded-full bg-gradient-to-r from-indigo-600 to-violet-550" style={{ width: '42%' }} />
-                        </div>
-                      </div>
-
-                      <div className="flex justify-between items-center pt-2 border-t border-slate-100 text-[10px] text-slate-400 font-extrabold uppercase tracking-wide leading-none">
-                        <span>Cluster Status:</span>
-                        <span className="text-indigo-600">Optimized</span>
+                      <div className="h-1.5 w-full bg-slate-950/60 rounded-full overflow-hidden border border-white/5">
+                        <div className="h-full bg-indigo-500" style={{ width: '42%' }} />
                       </div>
                     </div>
                   </div>
+                </div>
 
+                {/* 3. Cyber Mascot Companion */}
+                <div className="md:col-span-3 bg-slate-900/40 border border-white/10 backdrop-blur-md rounded-xl p-5 shadow-2xl flex flex-col items-center justify-center relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] bg-[size:1rem_1rem] opacity-20 pointer-events-none" />
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Workspace Mascot Cluster</span>
+                  
+                  <div className="relative w-full h-32 flex justify-center items-end gap-3 mt-2">
+                    {/* Cloud Bot floating on the left */}
+                    <svg viewBox="0 0 100 80" className="w-14 h-14 animate-float-peeker absolute left-2 bottom-8">
+                      <path d="M 52 110 C 45 110, 40 102, 45 94 C 45 80, 62 72, 74 82 C 84 72, 98 80, 96 94 C 104 94, 106 102, 98 110 C 92 110, 58 110, 52 110 Z" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="2" transform="scale(0.8) translate(-10, -50)" />
+                      <circle cx="36" cy="30" r="1.5" fill="#f43f5e" opacity="0.4" />
+                      <circle cx="52" cy="30" r="1.5" fill="#f43f5e" opacity="0.4" />
+                      <circle cx="40" cy="27" r="1.5" fill="#475569" />
+                      <circle cx="48" cy="27" r="1.5" fill="#475569" />
+                      <path d="M 42 32 Q 44 34 46 32" fill="none" stroke="#475569" strokeWidth="1" />
+                    </svg>
+
+                    {/* Database cylinder bot floating on the right */}
+                    <svg viewBox="0 0 100 80" className="w-14 h-16 animate-float-mini absolute right-2 bottom-6">
+                      <g transform="scale(0.8) translate(0, -10)">
+                        <rect x="25" y="20" width="50" height="50" rx="8" fill="#eab308" stroke="#ca8a04" strokeWidth="2" />
+                        <ellipse cx="50" cy="20" rx="25" ry="6" fill="#fef08a" stroke="#ca8a04" strokeWidth="2" />
+                        <ellipse cx="50" cy="35" rx="25" ry="6" fill="#eab308" stroke="#ca8a04" strokeWidth="2" />
+                        <ellipse cx="50" cy="50" rx="25" ry="6" fill="#eab308" stroke="#ca8a04" strokeWidth="2" />
+                        <circle cx="40" cy="42" r="2.5" fill="#1e293b" />
+                        <circle cx="60" cy="42" r="2.5" fill="#1e293b" />
+                        <path d="M 46 52 Q 50 56 54 52" fill="none" stroke="#1e293b" strokeWidth="1.5" strokeLinecap="round" />
+                      </g>
+                    </svg>
+
+                    {/* Monitor Bot sitting in center */}
+                    <svg viewBox="0 0 100 100" className="w-20 h-20 animate-float-giga relative z-10">
+                      <line x1="40" y1="75" x2="35" y2="92" stroke="#475569" strokeWidth="2.5" strokeLinecap="round" />
+                      <line x1="60" y1="75" x2="65" y2="92" stroke="#475569" strokeWidth="2.5" strokeLinecap="round" />
+                      <rect x="25" y="30" width="50" height="42" rx="7" fill="#1e293b" stroke="#475569" strokeWidth="2" />
+                      <rect x="30" y="35" width="40" height="32" rx="4" fill="#0f172a" stroke="#334155" strokeWidth="1" />
+                      <rect x="32" y="37" width="36" height="28" rx="2" fill="#020617" />
+                      <circle cx="44" cy="48" r="1.5" fill="#22d3ee" className="animate-pulse" />
+                      <circle cx="56" cy="48" r="1.5" fill="#22d3ee" className="animate-pulse" />
+                      <path d="M 47 54 Q 50 57 53 54" fill="none" stroke="#22d3ee" strokeWidth="1" strokeLinecap="round" />
+                    </svg>
+                  </div>
+                  
+                  <p className="text-[9px] text-slate-350 font-bold text-center mt-3 uppercase tracking-wider">
+                    Companion Mascot Cluster
+                  </p>
+                  <span className="text-[7.5px] text-indigo-400 font-medium italic mt-0.5">"All nodes online & synced!"</span>
                 </div>
 
               </div>
             </div>
-          ) : (
-            // ==================== TABS VIEW: CONTRIBUTORS PROFILE VIEW ====================
-            <div className="space-y-6 relative w-full animate-slide-up-fade">
+          )}
+
+          {/* TAB: CONTRIBUTOR AUDITS GRID */}
+          {activeTab === 'contributors' && (
+            <div className="space-y-8 animate-slide-up-fade max-w-5xl">
               <div>
-                <h2 className="text-3xl font-black text-slate-905">
-                  Team <span className="bg-gradient-to-r from-indigo-655 to-violet-550 bg-clip-text text-transparent">Contributors</span>
+                <h2 className="text-xl font-extrabold text-white tracking-tight leading-none uppercase">
+                  Contributor Auditing Grid
                 </h2>
-                <p className="text-sm text-slate-500 mt-1 font-semibold">
-                  Project Kelompok 3 - Tugas Besar Cloud Computing
+                <p className="text-xs text-slate-400 mt-2 font-medium">
+                  Select a team contributor profile card to trigger the audit slide-over panel.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {members.map((member) => {
+              {/* Contributors Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredMembers.map((member) => {
+                  const { role, bio } = getMemberDetails(member.name);
                   const initials = getInitials(member.name);
-                  const completionRate = member.total_tasks > 0 ? Math.round((member.completed_tasks / member.total_tasks) * 100) : 0;
-                  const avatarGradient = getAvatarGradient(member.id);
-                  
-                  // Specific member role descriptions for Kelompok 3
-                  let role = 'Software Engineer';
-                  let bio = 'Responsible for codebase development and state modules.';
-                  if (member.name.toLowerCase().includes('zaky')) {
-                    role = 'Cloud System Architect';
-                    bio = 'Leads local database design and multi-instance cloud deployments.';
-                  } else if (member.name.toLowerCase().includes('hafiz')) {
-                    role = 'DevOps / CI-CD Specialist';
-                    bio = 'Handles container configuration and EC2 stateless auto-scaling.';
-                  } else if (member.name.toLowerCase().includes('haris')) {
-                    role = 'Database Engineer';
-                    bio = 'Designs schema migrations, indexing optimization, and query plans.';
-                  } else if (member.name.toLowerCase().includes('djordhi')) {
-                    role = 'Frontend Developer';
-                    bio = 'Fosters visual aesthetics, glassmorphism designs, and UI responsiveness.';
-                  } else if (member.name.toLowerCase().includes('farid')) {
-                    role = 'Fullstack Developer';
-                    bio = 'Responsible for Next.js app router server actions and state sync.';
-                  }
+                  const progress = member.total_tasks > 0 ? Math.round((member.completed_tasks / member.total_tasks) * 100) : 0;
+                  const isSelected = selectedMemberId === member.id;
 
                   return (
                     <div
                       key={member.id}
-                      className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:border-indigo-300 hover:shadow-md hover:scale-[1.01] hover:-translate-y-0.5"
+                      onClick={() => handleMemberClick(member)}
+                      className={`group bg-slate-900/40 border p-6 shadow-2xl backdrop-blur-md transition-all duration-300 cursor-pointer flex flex-col justify-between min-h-[285px] rounded-xl ${
+                        isSelected 
+                          ? 'border-indigo-500 ring-1 ring-indigo-500/30 bg-slate-955/60 shadow-[0_0_15px_rgba(99,102,241,0.25)]' 
+                          : 'border-white/10 hover:border-indigo-500/40 hover:bg-slate-900/60'
+                      }`}
                     >
-                      {/* Glow background effect */}
-                      <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-indigo-500/5 blur-2xl pointer-events-none" />
-
-                      <div className="flex items-start gap-4">
-                        {/* Member initials avatar */}
-                        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr ${avatarGradient} font-bold text-white shadow-sm text-sm`}>
-                          {initials}
+                      <div className="space-y-4">
+                        <div className="flex items-start gap-4">
+                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-indigo-950 border border-indigo-500/20 font-mono font-bold text-indigo-300 text-xs uppercase shadow-sm">
+                            {initials}
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="text-xs font-bold text-white group-hover:text-indigo-200 transition-colors truncate">
+                              {member.name}
+                            </h4>
+                            <span className="inline-block text-[8.5px] font-black text-slate-400 uppercase tracking-wider mt-1.5">
+                              {role}
+                            </span>
+                          </div>
                         </div>
 
-                        <div className="space-y-1">
-                          <h4 className="text-base font-bold text-slate-800 leading-snug">{member.name}</h4>
-                          <span className="inline-flex items-center rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-705 border border-indigo-100">
-                            {role}
-                          </span>
+                        <div className="space-y-2 pt-3 border-t border-white/5 text-[10.5px] font-bold text-slate-400">
+                          <div className="flex justify-between items-center">
+                            <span>Class Group</span>
+                            <span className="text-slate-200">{member.class_room}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span>Student NIM</span>
+                            <span className="text-slate-200 font-mono">120223000{member.id}</span>
+                          </div>
+                          <p className="text-[10px] text-slate-300 font-medium italic mt-2.5 leading-relaxed font-semibold">
+                            &ldquo;{bio}&rdquo;
+                          </p>
                         </div>
                       </div>
 
-                      <div className="mt-4 space-y-3 pt-3 border-t border-slate-100">
-                        <div className="flex justify-between items-center text-xs text-slate-500">
-                          <span>Class Room</span>
-                          <span className="font-semibold text-slate-705">{member.class_room}</span>
+                      {/* progress */}
+                      <div className="mt-5 space-y-2 pt-3 border-t border-white/5">
+                        <div className="flex items-center justify-between text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                          <span>Task Delivery</span>
+                          <span className="text-white font-mono">{progress}%</span>
                         </div>
-                        <div className="flex justify-between items-center text-xs text-slate-500">
-                          <span>NIM / Student ID</span>
-                          <span className="font-mono text-slate-505">120223000{member.id}</span>
-                        </div>
-                        <p className="text-xs text-slate-400 italic mt-2 leading-relaxed font-semibold">
-                          &ldquo;{bio}&rdquo;
-                        </p>
-                      </div>
-
-                      {/* Member task metrics */}
-                      <div className="mt-5 space-y-2.5 pt-4 border-t border-slate-100">
-                        <div className="flex items-center justify-between text-xs text-slate-500">
-                          <span className="font-semibold">Task Completion</span>
-                          <span className="font-bold text-indigo-650">{completionRate}%</span>
-                        </div>
-                        <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
-                          <div
-                            className="h-full rounded-full bg-gradient-to-r from-indigo-650 to-violet-550 transition-all duration-500"
-                            style={{ width: `${completionRate}%` }}
+                        <div className="h-1.5 w-full bg-slate-950/60 rounded-full overflow-hidden border border-white/5">
+                          <div 
+                            className="h-full bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-full transition-all duration-500" 
+                            style={{ width: `${progress}%` }} 
                           />
                         </div>
-                        <div className="flex justify-between text-[11px] text-slate-400 pt-1 font-semibold">
-                          <span>{member.completed_tasks} completed</span>
-                          <span>{member.total_tasks} total tasks</span>
+                        <div className="flex justify-between text-[9px] text-slate-400 font-bold pt-1">
+                          <span>{member.completed_tasks} done</span>
+                          <span>{member.total_tasks} total</span>
                         </div>
                       </div>
                     </div>
@@ -591,14 +539,188 @@ export default function AdminDashboard({
             </div>
           )}
         </main>
-        
-        {/* Footer */}
-        <footer className="py-4 border-t border-slate-100 text-center text-[9px] text-slate-400 font-bold uppercase tracking-widest bg-slate-50/50 rounded-b-3xl mt-auto">
-          Security Level: Alpha • Monolith Cluster Alpha-7
-        </footer>
       </div>
 
-      {/* Confirmation Toasts */}
+      {/* 3. MOBBIN-STYLE AUDITING DRAWER SLIDE-OVER SHEET */}
+      {selectedMemberId !== null && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          
+          {/* Backdrop overlay */}
+          <div 
+            onClick={() => {
+              setSelectedMemberId(null);
+              setSelectedMemberName(null);
+            }}
+            className="absolute inset-0 bg-slate-905/60 backdrop-blur-md transition-opacity animate-fade-in-backdrop"
+          />
+
+          {/* Drawer Body panel */}
+          <div className="relative w-full max-w-4xl bg-slate-950 border-l border-white/10 h-full flex flex-col shadow-2xl z-10 animate-slide-in-right overflow-hidden">
+            
+            {/* Drawer Header */}
+            <div className="h-16 border-b border-white/10 px-6 flex items-center justify-between shrink-0 bg-slate-900/40 z-10 shadow-xs">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-950 border border-indigo-500/20 font-mono font-bold text-indigo-300 text-xs uppercase shadow-sm">
+                  {selectedMemberName ? getInitials(selectedMemberName) : 'M'}
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-white leading-none">
+                    Auditing Contributor: {selectedMemberName}
+                  </h3>
+                  <span className="inline-block mt-1 text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">
+                    {selectedMemberName ? getMemberDetails(selectedMemberName).role : 'Contributor'}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  setSelectedMemberId(null);
+                  setSelectedMemberName(null);
+                }}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Scrollable Audit Area */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              
+              {isLoadingAudited ? (
+                <div className="space-y-6 animate-pulse mt-4">
+                  <div className="space-y-2">
+                    <div className="h-4 w-40 rounded bg-slate-800" />
+                    <div className="h-3.5 w-64 rounded bg-slate-900" />
+                  </div>
+                  <div className="h-2 w-full rounded bg-slate-800" />
+                  <div className="space-y-3 pt-6 border-t border-white/5">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="flex gap-3 items-center rounded-lg border border-white/5 p-4 bg-slate-900/40 shadow-xs">
+                        <div className="h-4.5 w-4.5 rounded bg-slate-800" />
+                        <div className="h-4 w-44 rounded bg-slate-850 flex-1" />
+                        <div className="h-5 w-16 rounded bg-slate-900" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-6 max-w-4xl mx-auto">
+                  {/* Detailed Member info metadata banner */}
+                  {selectedMemberName && (
+                    <div className="rounded-xl border border-white/10 p-4 bg-slate-900/40 shadow-xs text-xs space-y-2.5 font-bold text-slate-400">
+                      <div className="flex justify-between">
+                        <span>Class Room:</span>
+                        <span className="text-slate-200 font-extrabold">{members.find(m => m.id === selectedMemberId)?.class_room}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Student NIM:</span>
+                        <span className="text-indigo-300 font-mono">120223000{selectedMemberId}</span>
+                      </div>
+                      <div className="border-t border-white/5 pt-2 text-slate-400 italic font-semibold leading-relaxed">
+                        &ldquo;{getMemberDetails(selectedMemberName).bio}&rdquo;
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Todo List component (Editable by Admin) */}
+                  <TodoList
+                    initialTodos={auditedTodos}
+                    readOnly={false} // Allows admin to modify items
+                    ownerName={selectedMemberName || 'Contributor'}
+                    onMutationSuccess={fetchMembers}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Drawer Footer */}
+            <div className="py-3.5 border-t border-white/10 text-center text-[9px] text-slate-500 font-bold uppercase tracking-wider bg-slate-950/80 shrink-0 shadow-inner">
+              Secure Auditing Session • Kelompok 3 Console
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. MOBILE DRAWER NAVIGATION MENU */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 flex">
+          <div 
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="absolute inset-0 bg-slate-905/60 backdrop-blur-md animate-fade-in-backdrop"
+          />
+
+          <div className="relative w-64 bg-slate-950 h-full flex flex-col justify-between p-6 shadow-2xl z-10 animate-slide-in-right border-l border-white/10">
+            <div className="space-y-8">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-md shadow-indigo-500/20 select-none shrink-0">
+                    <svg viewBox="0 0 32 32" className="w-5 h-5">
+                      <rect x="5" y="7" width="22" height="18" rx="4" fill="#ffffff" />
+                      <rect x="8" y="10" width="16" height="12" rx="2" fill="#4f46e5" />
+                      <circle cx="12" cy="15" r="1.2" fill="#22d3ee" />
+                      <circle cx="20" cy="15" r="1.2" fill="#22d3ee" />
+                      <rect x="13" y="25" width="6" height="2" fill="#ffffff" />
+                    </svg>
+                  </div>
+                  <span className="text-[10px] font-bold text-white uppercase tracking-wider">Admin Console</span>
+                </div>
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="p-1 text-slate-400 hover:text-white text-sm cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Navigation links */}
+              <nav className="space-y-1.5">
+                <button
+                  onClick={() => {
+                    setActiveTab('dashboard');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center gap-3 w-full text-left rounded-lg px-3.5 py-2.5 text-xs font-bold transition-all border ${
+                    activeTab === 'dashboard'
+                      ? 'bg-indigo-600 text-white border-indigo-500/30 shadow-md shadow-indigo-500/10'
+                      : 'text-slate-400 hover:text-white hover:bg-white/5 border-transparent'
+                  }`}
+                >
+                  Overview Console
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveTab('contributors');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center gap-3 w-full text-left rounded-lg px-3.5 py-2.5 text-xs font-bold transition-all border ${
+                    activeTab === 'contributors'
+                      ? 'bg-indigo-600 text-white border-indigo-500/30 shadow-md shadow-indigo-500/10'
+                      : 'text-slate-400 hover:text-white hover:bg-white/5 border-transparent'
+                  }`}
+                >
+                  Contributor Audits
+                </button>
+              </nav>
+            </div>
+
+            {/* Logout bottom */}
+            <div className="border-t border-white/5 pt-6">
+              <form onSubmit={handleSignOut}>
+                <button
+                  type="submit"
+                  className="flex items-center gap-3 w-full text-left rounded-lg px-3.5 py-2.5 text-xs font-bold text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer"
+                >
+                  Sign Out
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast notifications */}
       {toast && (
         <Toast
           message={toast.message}

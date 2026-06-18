@@ -30,26 +30,20 @@ export async function PUT(
       return NextResponse.json({ success: false, error: 'Unauthorized.' }, { status: 401 });
     }
 
-    // Resolve user ID
+    // Resolve user (auth verification only)
     const users = await query<UserRow[]>('SELECT id FROM users WHERE username = ? LIMIT 1', [username]);
     if (users.length === 0) {
       return NextResponse.json({ success: false, error: 'User not found.' }, { status: 404 });
     }
-    const userId = users[0].id;
-    const isAdmin = username === 'admin';
 
-    // Verify ownership
+    // Team-collaborative: verify task exists (no per-user ownership restriction)
     const existingTodos = await query<TodoRow[]>('SELECT id, user_id FROM todos WHERE id = ? LIMIT 1', [todoId]);
     if (existingTodos.length === 0) {
       return NextResponse.json({ success: false, error: 'Task not found.' }, { status: 404 });
     }
 
-    if (!isAdmin && existingTodos[0].user_id !== userId) {
-      return NextResponse.json({ success: false, error: 'Access denied.' }, { status: 403 });
-    }
-
     const body = await request.json();
-    const { title, description, status } = body;
+    const { title, description, status, category } = body;
 
     if (!title || typeof title !== 'string' || !title.trim()) {
       return NextResponse.json({ success: false, error: 'Title is required.' }, { status: 400 });
@@ -61,8 +55,8 @@ export async function PUT(
     }
 
     await query(
-      'UPDATE todos SET title = ?, description = ?, status = ? WHERE id = ?',
-      [title.trim(), description?.trim() || null, status || 'pending', todoId]
+      'UPDATE todos SET title = ?, description = ?, status = ?, category = ? WHERE id = ?',
+      [title.trim(), description?.trim() || null, status || 'pending', category || 'general', todoId]
     );
 
     return NextResponse.json({ success: true });
@@ -93,22 +87,16 @@ export async function DELETE(
       return NextResponse.json({ success: false, error: 'Unauthorized.' }, { status: 401 });
     }
 
-    // Resolve user ID
+    // Resolve user (auth verification only)
     const users = await query<UserRow[]>('SELECT id FROM users WHERE username = ? LIMIT 1', [username]);
     if (users.length === 0) {
       return NextResponse.json({ success: false, error: 'User not found.' }, { status: 404 });
     }
-    const userId = users[0].id;
-    const isAdmin = username === 'admin';
 
-    // Verify ownership
+    // Team-collaborative: verify task exists (no per-user ownership restriction)
     const existingTodos = await query<TodoRow[]>('SELECT id, user_id FROM todos WHERE id = ? LIMIT 1', [todoId]);
     if (existingTodos.length === 0) {
       return NextResponse.json({ success: false, error: 'Task not found.' }, { status: 404 });
-    }
-
-    if (!isAdmin && existingTodos[0].user_id !== userId) {
-      return NextResponse.json({ success: false, error: 'Access denied.' }, { status: 403 });
     }
 
     await query('DELETE FROM todos WHERE id = ?', [todoId]);

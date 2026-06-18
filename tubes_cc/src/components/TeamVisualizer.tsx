@@ -32,104 +32,111 @@ export default function TeamVisualizer({
   const completionPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
   // SVG Circular progress configurations
-  const radius = 36;
-  const strokeWidth = 6;
+  const radius = 32;
+  const strokeWidth = 5;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (completionPercentage / 100) * circumference;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md">
-      {/* Subtle top background abstract gradient panel */}
-      <div className="absolute left-0 right-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
-      <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full bg-gradient-to-tr from-indigo-500/5 to-violet-500/5 blur-3xl pointer-events-none" />
-
+    <div className="relative overflow-hidden rounded-xl border border-white/10 bg-slate-900/40 backdrop-blur-md p-6 transition-colors duration-200 text-white shadow-2xl">
       {/* Header with Title */}
-      <div className="mb-6">
-        <h3 className="text-sm font-extrabold text-slate-800 uppercase tracking-wider leading-none">
-          Team Progress Overview
-        </h3>
-        <p className="text-[11px] text-slate-400 mt-1.5 font-semibold leading-none">
-          Real-time collaboration status metrics
-        </p>
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider leading-none">
+            Team Workspace Analytics
+          </h3>
+          <h2 className="text-lg font-extrabold text-white tracking-tight mt-1.5 leading-none">
+            Overall Progress Overview
+          </h2>
+        </div>
+
+        {/* Dynamic Filter Tabs for Contributor Status */}
+        <div className="flex flex-wrap gap-1 border border-white/10 p-0.5 rounded-lg bg-slate-950/60 self-start">
+          {[
+            { id: 'all', label: 'All' },
+            { id: 'no_todo', label: 'Not Started' },
+            { id: 'in_progress', label: 'In Progress' },
+            { id: 'completed', label: 'Completed' }
+          ].map((btn) => (
+            <button
+              key={btn.id}
+              onClick={() => onFilterChange(btn.id as any)}
+              className={`px-3 py-1.5 text-[10px] font-bold rounded-md transition-premium cursor-pointer ${
+                activeFilter === btn.id
+                  ? 'bg-indigo-600 text-white shadow-sm border border-indigo-500/30'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              {btn.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Flex container */}
-      <div className="flex flex-col md:flex-row gap-8 items-center">
+      {/* Grid Content Layout */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
         
         {/* Left: SVG Circular Progress Ring */}
-        <div className="flex flex-col items-center justify-center bg-slate-50 border border-slate-200/80 rounded-2xl p-5 shrink-0 w-36 h-36">
+        <div className="flex flex-col items-center justify-center bg-slate-950/40 border border-white/5 rounded-xl p-4 shrink-0 h-36">
           <div className="relative flex items-center justify-center">
             {/* SVG Ring */}
-            <svg className="h-24 w-24 transform -rotate-90">
+            <svg className="h-20 w-20 transform -rotate-90">
               <circle
-                cx="48"
-                cy="48"
+                cx="40"
+                cy="40"
                 r={radius}
-                className="stroke-slate-200/60 fill-none"
+                className="stroke-white/5 fill-none"
                 strokeWidth={strokeWidth}
               />
               <circle
-                cx="48"
-                cy="48"
+                cx="40"
+                cy="40"
                 r={radius}
-                className="fill-none transition-all duration-500 ease-out"
+                className="stroke-indigo-500 fill-none transition-all duration-500 ease-out"
                 strokeWidth={strokeWidth}
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}
                 strokeLinecap="round"
-                style={{
-                  stroke: 'url(#completionGlowAdmin)',
-                }}
               />
-              {/* Define Gradient */}
-              <defs>
-                <linearGradient id="completionGlowAdmin" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#4f46e5" /> {/* Indigo */}
-                  <stop offset="100%" stopColor="#8b5cf6" /> {/* Violet */}
-                </linearGradient>
-              </defs>
             </svg>
 
             {/* Inner Percentage text */}
             <div className="absolute flex flex-col items-center">
-              <span className="font-mono text-xl font-black text-slate-800 leading-none">
+              <span className="font-mono text-sm font-bold text-white leading-none">
                 {completionPercentage}%
               </span>
-              <span className="text-[8px] font-extrabold text-slate-400 uppercase tracking-widest mt-1">
-                Completed
+              <span className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                Done
               </span>
             </div>
           </div>
         </div>
 
         {/* Right side: Detailed Stats and Information */}
-        <div className="flex-1 space-y-4">
+        <div className="md:col-span-3 space-y-4">
           <div>
-            <h4 className="text-base font-bold text-slate-800 tracking-tight">Team Workspace Health & Delivery</h4>
-            <p className="text-xs text-slate-500 mt-1 leading-relaxed font-medium">
-              Overview of all tasks assigned to Kelompok 3 members. Status tracking helps monitor cloud-native microservice integration progress.
+            <h4 className="text-sm font-bold text-white tracking-tight">Delivery Health</h4>
+            <p className="text-xs text-slate-350 mt-1 leading-relaxed font-medium">
+              Tracks the collective output of Kelompok 3 members. In-progress tasks show active microservice integration logs, while completed tasks indicate verified deployment states.
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-4 pt-2 border-t border-slate-100">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-3 border-t border-white/5">
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Contributors</span>
-              <span className="text-lg font-black text-slate-800 mt-0.5">{totalMembers}</span>
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Total Team</span>
+              <span className="text-base font-bold text-white mt-1">{totalMembers} contributors</span>
             </div>
-            <div className="h-8 w-px bg-slate-200 self-center" />
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Project Tasks</span>
-              <span className="text-lg font-black text-slate-800 mt-0.5">{totalTasks}</span>
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Total Tasks</span>
+              <span className="text-base font-bold text-white mt-1">{totalTasks} items</span>
             </div>
-            <div className="h-8 w-px bg-slate-200 self-center" />
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Completed Tasks</span>
-              <span className="text-lg font-black text-indigo-600 mt-0.5">{completedTasks}</span>
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Completed</span>
+              <span className="text-base font-bold text-white mt-1">{completedTasks} items</span>
             </div>
-            <div className="h-8 w-px bg-slate-200 self-center" />
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Running Tasks</span>
-              <span className="text-lg font-black text-amber-500 mt-0.5">{inProgressMembersCount} active</span>
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Active Status</span>
+              <span className="text-base font-bold text-emerald-400 mt-1">{inProgressMembersCount} active</span>
             </div>
           </div>
         </div>
@@ -138,3 +145,4 @@ export default function TeamVisualizer({
     </div>
   );
 }
+

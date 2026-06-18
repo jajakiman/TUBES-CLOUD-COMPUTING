@@ -17,7 +17,7 @@ interface TodoRow extends mysql.RowDataPacket {
   updated_at: string;
 }
 
-// GET all todos for current user
+// GET all todos for the entire team (collaborative workspace)
 export async function GET() {
   try {
     const cookieStore = await cookies();
@@ -27,16 +27,15 @@ export async function GET() {
       return NextResponse.json({ success: false, error: 'Unauthorized.' }, { status: 401 });
     }
 
-    // Resolve user ID
+    // Verify user exists (auth check only, no scoping)
     const users = await query<UserRow[]>('SELECT id FROM users WHERE username = ? LIMIT 1', [username]);
     if (users.length === 0) {
       return NextResponse.json({ success: false, error: 'User not found.' }, { status: 404 });
     }
-    const userId = users[0].id;
 
+    // Fetch ALL team todos (collaborative view)
     const todos = await query<TodoRow[]>(
-      'SELECT id, user_id, title, description, status, created_at, updated_at FROM todos WHERE user_id = ? ORDER BY id DESC',
-      [userId]
+      'SELECT id, user_id, title, description, category, status, created_at, updated_at FROM todos ORDER BY created_at DESC'
     );
 
     return NextResponse.json({ success: true, todos });
@@ -60,7 +59,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description } = body;
+    const { title, description, assignedUserId, category } = body;
 
     if (!title || typeof title !== 'string' || !title.trim()) {
       return NextResponse.json({ success: false, error: 'Title is required.' }, { status: 400 });
@@ -73,9 +72,12 @@ export async function POST(request: NextRequest) {
     }
     const userId = users[0].id;
 
+    const targetUserId = assignedUserId ? Number(assignedUserId) : userId;
+    const targetCategory = category || 'general';
+
     const result = await query<mysql.ResultSetHeader>(
-      'INSERT INTO todos (user_id, title, description, status) VALUES (?, ?, ?, ?)',
-      [userId, title.trim(), description?.trim() || null, 'in_progress']
+      'INSERT INTO todos (user_id, title, description, status, category) VALUES (?, ?, ?, ?, ?)',
+      [targetUserId, title.trim(), description?.trim() || null, 'pending', targetCategory]
     );
 
     return NextResponse.json({ success: true, todoId: result.insertId });

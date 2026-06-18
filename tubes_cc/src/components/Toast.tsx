@@ -21,46 +21,49 @@ export default function Toast({ message, type, onClose }: ToastProps) {
   }, [onClose]);
 
   const bgColor = type === 'success' 
-    ? 'bg-white border-slate-200 text-slate-800 shadow-xl shadow-slate-100' 
+    ? 'bg-slate-900/90 border-white/10 text-white shadow-2xl backdrop-blur-md' 
     : type === 'error'
-    ? 'bg-rose-50 border-rose-200 text-rose-800 shadow-xl shadow-rose-100/50'
-    : 'bg-white border-slate-200 text-slate-800 shadow-xl shadow-slate-100';
+    ? 'bg-rose-950/90 border-rose-500/20 text-rose-200 shadow-2xl backdrop-blur-md'
+    : 'bg-slate-900/90 border-white/10 text-white shadow-2xl backdrop-blur-md';
 
   const icon = type === 'success' ? (
-    <svg className="h-5 w-5 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    <svg className="h-4 w-4 text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
     </svg>
   ) : type === 'error' ? (
-    <svg className="h-5 w-5 text-rose-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    <svg className="h-4 w-4 text-rose-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
     </svg>
   ) : (
-    <svg className="h-5 w-5 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    <svg className="h-4 w-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
     </svg>
   );
 
   const barColor = type === 'success'
-    ? 'bg-emerald-500'
+    ? 'bg-indigo-500'
     : type === 'error'
     ? 'bg-rose-500'
-    : 'bg-indigo-600';
+    : 'bg-indigo-400';
 
   return (
-    <div className={`fixed bottom-5 right-5 z-50 flex flex-col overflow-hidden rounded-2xl border shadow-xl animate-slide-up-fade ${bgColor}`}>
-      <div className="flex items-center gap-3 px-5 py-4 min-w-[280px]">
-        {icon}
-        <span className="text-xs font-semibold tracking-tight text-slate-700 flex-1">{message}</span>
+    <div className={`fixed bottom-6 right-6 z-50 flex flex-col overflow-hidden rounded-xl border animate-slide-up-fade ${bgColor}`}>
+      <div className="flex items-center gap-3.5 px-4.5 py-3.5 min-w-[280px]">
+        <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-slate-950/60 border border-white/5 shrink-0">
+          {icon}
+        </div>
+        <span className="text-xs font-bold text-white flex-1 pr-2">{message}</span>
         <button 
           type="button" 
           onClick={onClose} 
-          className="ml-2 hover:opacity-75 transition-opacity text-slate-400 hover:text-slate-600 font-bold text-xs cursor-pointer"
+          className="hover:opacity-75 transition-opacity text-slate-400 hover:text-white font-bold text-[10px] cursor-pointer"
         >
           ✕
         </button>
       </div>
       {/* Shrinking progress bar */}
-      <div className={`h-1 w-full animate-shrink-x ${barColor}`} />
+      <div className={`h-[3px] w-full animate-shrink-x ${barColor}`} />
     </div>
   );
 }
+

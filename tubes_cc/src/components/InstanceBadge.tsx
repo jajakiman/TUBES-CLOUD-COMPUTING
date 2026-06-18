@@ -27,48 +27,41 @@ export default function InstanceBadge() {
   }, []);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm hover:shadow-md transition-all duration-300 hover:border-indigo-300">
-      {/* Soft abstract background gradient block */}
-      <div className="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-gradient-to-tr from-indigo-500/5 to-violet-500/5 blur-xl pointer-events-none" />
-
+    <div className="relative overflow-hidden rounded-xl border border-white/10 bg-slate-900/40 backdrop-blur-md p-5 transition-colors duration-200 text-white shadow-2xl">
       <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-3">
-          {/* Animated Pulsing Active Node Indicator */}
-          <div className="relative flex h-3 w-3 shrink-0">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-500"></span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {/* Animated Pulsing Active Node Indicator */}
+            <div className="relative flex h-2 w-2 shrink-0">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+            </div>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              System Instance Node
+            </span>
           </div>
 
-          <div>
-            <p className="text-[10px] font-extrabold tracking-widest text-slate-400 uppercase leading-none">
-              Active Routing Node
-            </p>
-            <h3 className="font-mono text-sm font-bold text-slate-800 tracking-tight mt-1">
-              {instanceId}
-            </h3>
-          </div>
+          <span className="inline-flex items-center rounded bg-indigo-600/10 px-1.5 py-0.5 text-[9px] font-bold text-indigo-300 border border-indigo-500/20">
+            AWS ALB Active
+          </span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100">
-          {/* AWS ALB Indicator Badge */}
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-2.5 py-0.5 text-[10px] font-bold text-indigo-650 border border-indigo-100">
-            <svg className="h-1.5 w-1.5 fill-indigo-600 animate-pulse" viewBox="0 0 6 6" aria-hidden="true">
-              <circle cx="3" cy="3" r="3" />
-            </svg>
-            AWS ALB Directed
-          </span>
-
-          <span className="text-[10px] font-medium text-slate-400">
-            Refreshed: <span className="font-mono text-slate-500">{timestamp}</span>
+        <div className="flex items-baseline justify-between mt-1">
+          <h3 className="font-mono text-sm font-bold text-white tracking-tight">
+            {instanceId}
+          </h3>
+          <span className="text-[9px] font-medium text-slate-400">
+            Refreshed: <span className="font-mono font-semibold text-slate-350">{timestamp}</span>
           </span>
         </div>
       </div>
 
-      <div className="mt-3 border-t border-slate-100 pt-3">
-        <p className="text-[10.5px] text-slate-500 leading-relaxed">
-          Traffic is processed by the monolith application deployed on a stateless EC2 scaling group.
+      <div className="mt-4 border-t border-white/5 pt-3">
+        <p className="text-[11px] text-slate-400 leading-normal">
+          This stateless instance handles application requests under an Application Load Balancer (ALB) deployment.
         </p>
       </div>
     </div>
   );
 }
+

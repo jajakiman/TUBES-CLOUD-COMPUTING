@@ -10,6 +10,7 @@ export interface Todo {
   user_id: number;
   title: string;
   description: string | null;
+  category?: string;
   status: 'pending' | 'in_progress' | 'completed';
   created_at: string;
   updated_at: string;
@@ -25,6 +26,7 @@ interface TodoRow extends mysql.RowDataPacket {
   user_id: number;
   title: string;
   description: string | null;
+  category: string;
   status: string;
   created_at: string | Date;
   updated_at: string | Date;
@@ -55,7 +57,7 @@ export async function getCurrentUser(): Promise<UserRow | null> {
 }
 
 /**
- * Fetch all todos for the current logged-in user.
+ * Fetch all todos for the entire team (collaborative workspace).
  */
 export async function getTodosAction(): Promise<Todo[]> {
   try {
@@ -64,9 +66,9 @@ export async function getTodosAction(): Promise<Todo[]> {
       throw new Error('Unauthorized');
     }
 
+    // Team-wide: fetch ALL todos, not just the current user's
     const rows = await query<TodoRow[]>(
-      'SELECT id, user_id, title, description, status, created_at, updated_at FROM todos WHERE user_id = ? ORDER BY created_at DESC',
-      [user.id]
+      'SELECT id, user_id, title, description, category, status, created_at, updated_at FROM todos ORDER BY created_at DESC'
     );
 
     return rows.map((row) => ({
@@ -74,6 +76,7 @@ export async function getTodosAction(): Promise<Todo[]> {
       user_id: Number(row.user_id),
       title: String(row.title),
       description: row.description ? String(row.description) : null,
+      category: row.category ? String(row.category) : 'general',
       status: row.status as 'pending' | 'in_progress' | 'completed',
       created_at: String(row.created_at),
       updated_at: String(row.updated_at),
@@ -89,7 +92,9 @@ export async function getTodosAction(): Promise<Todo[]> {
  */
 export async function createTodoAction(
   title: string,
-  description?: string
+  description?: string,
+  category?: string,
+  assignedUserId?: number
 ): Promise<{ success: boolean; error?: string }> {
   try {
     if (!title || typeof title !== 'string' || title.trim() === '') {
@@ -101,9 +106,12 @@ export async function createTodoAction(
       return { success: false, error: 'Unauthorized' };
     }
 
+    const targetUserId = assignedUserId ? Number(assignedUserId) : user.id;
+    const targetCategory = category || 'general';
+
     await query(
-      'INSERT INTO todos (user_id, title, description, status) VALUES (?, ?, ?, ?)',
-      [user.id, title.trim(), description?.trim() || null, 'in_progress']
+      'INSERT INTO todos (user_id, title, description, status, category) VALUES (?, ?, ?, ?, ?)',
+      [targetUserId, title.trim(), description?.trim() || null, 'pending', targetCategory]
     );
 
     revalidatePath('/dashboard');
@@ -115,13 +123,14 @@ export async function createTodoAction(
 }
 
 /**
- * Update an existing todo.
+ * Update an existing todo (team-collaborative: any authenticated member can update).
  */
 export async function updateTodoAction(
   id: number,
   title: string,
   description: string | null,
-  status: 'pending' | 'in_progress' | 'completed'
+  status: 'pending' | 'in_progress' | 'completed',
+  category?: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     if (!title || typeof title !== 'string' || title.trim() === '') {
@@ -133,19 +142,19 @@ export async function updateTodoAction(
       return { success: false, error: 'Unauthorized' };
     }
 
-    // Security: check that the todo belongs to the user
+    // Team-collaborative: verify the todo exists (no per-user ownership check)
     const check = await query<TodoRow[]>(
-      'SELECT id FROM todos WHERE id = ? AND user_id = ? LIMIT 1',
-      [id, user.id]
+      'SELECT id FROM todos WHERE id = ? LIMIT 1',
+      [id]
     );
 
     if (check.length === 0) {
-      return { success: false, error: 'Task not found or permission denied' };
+      return { success: false, error: 'Task not found' };
     }
 
     await query(
-      'UPDATE todos SET title = ?, description = ?, status = ? WHERE id = ?',
-      [title.trim(), description?.trim() || null, status, id]
+      'UPDATE todos SET title = ?, description = ?, status = ?, category = ? WHERE id = ?',
+      [title.trim(), description?.trim() || null, status, category || 'general', id]
     );
 
     revalidatePath('/dashboard');
@@ -157,7 +166,7 @@ export async function updateTodoAction(
 }
 
 /**
- * Delete a todo.
+ * Delete a todo (team-collaborative: any authenticated member can delete).
  */
 export async function deleteTodoAction(
   id: number
@@ -168,14 +177,14 @@ export async function deleteTodoAction(
       return { success: false, error: 'Unauthorized' };
     }
 
-    // Security: check that the todo belongs to the user
+    // Team-collaborative: verify the todo exists (no per-user ownership check)
     const check = await query<TodoRow[]>(
-      'SELECT id FROM todos WHERE id = ? AND user_id = ? LIMIT 1',
-      [id, user.id]
+      'SELECT id FROM todos WHERE id = ? LIMIT 1',
+      [id]
     );
 
     if (check.length === 0) {
-      return { success: false, error: 'Task not found or permission denied' };
+      return { success: false, error: 'Task not found' };
     }
 
     await query('DELETE FROM todos WHERE id = ?', [id]);
@@ -217,7 +226,7 @@ export async function getMemberTodosAction(
     const targetUserId = memberRows[0].user_id;
 
     const rows = await query<TodoRow[]>(
-      'SELECT id, user_id, title, description, status, created_at, updated_at FROM todos WHERE user_id = ? ORDER BY created_at DESC',
+      'SELECT id, user_id, title, description, category, status, created_at, updated_at FROM todos WHERE user_id = ? ORDER BY created_at DESC',
       [targetUserId]
     );
 
@@ -226,6 +235,7 @@ export async function getMemberTodosAction(
       user_id: Number(row.user_id),
       title: String(row.title),
       description: row.description ? String(row.description) : null,
+      category: row.category ? String(row.category) : 'general',
       status: row.status as 'pending' | 'in_progress' | 'completed',
       created_at: String(row.created_at),
       updated_at: String(row.updated_at),

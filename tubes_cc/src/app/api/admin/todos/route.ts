@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     }
 
     const todos = await query<TodoRow[]>(
-      'SELECT id, user_id, title, description, status, created_at, updated_at FROM todos WHERE user_id = ? ORDER BY id DESC',
+      'SELECT id, user_id, title, description, category, status, created_at, updated_at FROM todos WHERE user_id = ? ORDER BY id DESC',
       [userId]
     );
 
