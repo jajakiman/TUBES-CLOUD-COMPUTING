@@ -168,8 +168,11 @@ export default function TodoList({
     return 'general';
   };
 
+  // Filter out any tasks that do not belong to active team members (user_id 2 to 6)
+  const teamTodos = todos.filter((t) => [2, 3, 4, 5, 6].includes(t.user_id));
+
   // Filter & Search Logic
-  const filteredTodos = todos.filter((todo) => {
+  const filteredTodos = teamTodos.filter((todo) => {
     const category = getTaskCategory(todo.title, todo.description);
 
     // Status filter matching
@@ -194,6 +197,79 @@ export default function TodoList({
 
     return matchesStatus && matchesCategory && matchesAssignee && matchesSearch;
   });
+
+  // Dynamic count helpers that respect other active filters
+  const getStatusCount = (statusVal: string) => {
+    return teamTodos.filter((todo) => {
+      const category = getTaskCategory(todo.title, todo.description);
+
+      // Category filter matching
+      let matchesCategory = false;
+      if (categoryFilter.all) {
+        matchesCategory = true;
+      } else {
+        matchesCategory = categoryFilter[category] === true;
+      }
+
+      // Assignee filter matching
+      const matchesAssignee = assigneeFilter[todo.user_id] === true;
+
+      // Search query matching
+      const matchesSearch =
+        todo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (todo.description && todo.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        `#task-${todo.id}`.includes(searchQuery.toLowerCase());
+
+      return todo.status === statusVal && matchesCategory && matchesAssignee && matchesSearch;
+    }).length;
+  };
+
+  const getCategoryCount = (catVal: CategoryTag) => {
+    return teamTodos.filter((todo) => {
+      const category = getTaskCategory(todo.title, todo.description);
+      if (category !== catVal) return false;
+
+      // Status filter matching
+      const matchesStatus = statusFilter[todo.status] === true;
+
+      // Assignee filter matching
+      const matchesAssignee = assigneeFilter[todo.user_id] === true;
+
+      // Search query matching
+      const matchesSearch =
+        todo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (todo.description && todo.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        `#task-${todo.id}`.includes(searchQuery.toLowerCase());
+
+      return matchesStatus && matchesAssignee && matchesSearch;
+    }).length;
+  };
+
+  const getAssigneeCount = (memberId: number) => {
+    return teamTodos.filter((todo) => {
+      if (todo.user_id !== memberId) return false;
+
+      // Status filter matching
+      const matchesStatus = statusFilter[todo.status] === true;
+
+      // Category filter matching
+      const category = getTaskCategory(todo.title, todo.description);
+      let matchesCategory = false;
+      if (categoryFilter.all) {
+        matchesCategory = true;
+      } else {
+        matchesCategory = categoryFilter[category] === true;
+      }
+
+      // Search query matching
+      const matchesSearch =
+        todo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (todo.description && todo.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        `#task-${todo.id}`.includes(searchQuery.toLowerCase());
+
+      return matchesStatus && matchesCategory && matchesSearch;
+    }).length;
+  };
 
   // Sorting Logic
   const sortedTodos = [...filteredTodos].sort((a, b) => {
@@ -394,10 +470,10 @@ export default function TodoList({
   };
 
   // Total Task metrics
-  const totalCount = todos.length;
-  const pendingCount = todos.filter((t) => t.status === 'pending').length;
-  const inProgressCount = todos.filter((t) => t.status === 'in_progress').length;
-  const completedCount = todos.filter((t) => t.status === 'completed').length;
+  const totalCount = teamTodos.length;
+  const pendingCount = teamTodos.filter((t) => t.status === 'pending').length;
+  const inProgressCount = teamTodos.filter((t) => t.status === 'in_progress').length;
+  const completedCount = teamTodos.filter((t) => t.status === 'completed').length;
   const rate = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   // Category Tag display helper
@@ -521,7 +597,7 @@ export default function TodoList({
                     {status === 'in_progress' ? 'Running' : status === 'completed' ? 'Completed' : 'Pending'}
                   </span>
                   <span className="ml-auto font-mono text-[9px] px-1 bg-white/5 border border-white/5 rounded text-slate-400 font-medium">
-                    {todos.filter((t) => t.status === status).length}
+                    {getStatusCount(status)}
                   </span>
                 </label>
               ))}
@@ -569,7 +645,7 @@ export default function TodoList({
                   />
                   <span>{cat === 'devops' ? 'DevOps / AWS' : cat}</span>
                   <span className="ml-auto font-mono text-[9px] px-1 bg-white/5 border border-white/5 rounded text-slate-400 font-medium">
-                    {todos.filter((t) => getTaskCategory(t.title, t.description) === cat).length}
+                    {getCategoryCount(cat)}
                   </span>
                 </label>
               ))}
@@ -592,11 +668,11 @@ export default function TodoList({
                     onChange={(e) =>
                       setAssigneeFilter((prev) => ({ ...prev, [member.id]: e.target.checked }))
                     }
-                    className="h-3.5 w-3.5 rounded border-white/10 bg-slate-950 text-indigo-600 focus:ring-indigo-500"
+                    className="h-3.5 w-3.5 rounded border-white/10 bg-slate-955 text-indigo-600 focus:ring-indigo-500"
                   />
                   <span>{member.name}</span>
                   <span className="ml-auto font-mono text-[9px] px-1 bg-white/5 border border-white/5 rounded text-slate-400 font-medium">
-                    {todos.filter((t) => t.user_id === member.id).length}
+                    {getAssigneeCount(member.id)}
                   </span>
                 </label>
               ))}
@@ -874,7 +950,7 @@ export default function TodoList({
                 <div className="p-4 text-[8.5px] text-slate-300 space-y-1">
                   <p className="text-slate-550"># AWS EC2 Cloud Cluster Node Diagnostics</p>
                   <p>Node Name: <span className="text-sky-400">{ownerName || 'Personal Member'}</span></p>
-                  <p>Instance: <span className="text-amber-400">aws.ec2.t2.micro</span></p>
+                  <p>Instance: <span className="text-amber-400">aws.ec2.t3.micro</span></p>
                   <p className="pt-2">Task Title: &quot;{currentInspectedTodo.title}&quot;</p>
                   <p>Status: <span className={`font-bold ${currentInspectedTodo.status === 'completed'
                       ? 'text-emerald-400'

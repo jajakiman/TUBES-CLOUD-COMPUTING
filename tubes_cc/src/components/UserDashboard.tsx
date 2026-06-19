@@ -95,11 +95,14 @@ export default function UserDashboard({ sessionUser, initialTodos, fetchError }:
     }
   }, [activeTab]);
 
+  // Filter out any tasks that do not belong to active team members (user_id 2 to 6)
+  const teamTodos = todos.filter((t) => [2, 3, 4, 5, 6].includes(t.user_id));
+
   // Compute metrics for personal dashboard tab
-  const totalTasks = todos.length;
-  const completedTasks = todos.filter((t) => t.status === 'completed').length;
-  const inProgressTasks = todos.filter((t) => t.status === 'in_progress').length;
-  const notStartedTasks = todos.filter((t) => t.status === 'pending').length;
+  const totalTasks = teamTodos.length;
+  const completedTasks = teamTodos.filter((t) => t.status === 'completed').length;
+  const inProgressTasks = teamTodos.filter((t) => t.status === 'in_progress').length;
+  const notStartedTasks = teamTodos.filter((t) => t.status === 'pending').length;
   const completionPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
   // SVG Circular progress configurations
@@ -123,12 +126,12 @@ export default function UserDashboard({ sessionUser, initialTodos, fetchError }:
 
       const dateStr = d.toDateString();
       
-      const createdUpToDay = todos.filter(t => {
+      const createdUpToDay = teamTodos.filter(t => {
         const tDate = new Date(t.created_at);
         return tDate.toDateString() === dateStr || tDate < d;
       }).length;
       
-      const completedUpToDay = todos.filter(t => {
+      const completedUpToDay = teamTodos.filter(t => {
         if (t.status !== 'completed') return false;
         const tDate = new Date(t.updated_at);
         return tDate.toDateString() === dateStr || tDate < d;
@@ -138,18 +141,14 @@ export default function UserDashboard({ sessionUser, initialTodos, fetchError }:
       completedCounts.push(completedUpToDay);
     }
 
-    const hasData = totalCounts.some(c => c > 0);
-    const chartTotals = hasData ? totalCounts : [1, 2, 2, 3, 3, 5, 8];
-    const chartCompleted = hasData ? completedCounts : [0, 1, 1, 2, 2, 4, 6];
-
-    return { days, totals: chartTotals, completed: chartCompleted, isPlaceholder: !hasData };
+    return { days, totals: totalCounts, completed: completedCounts, isPlaceholder: false };
   };
 
   const chartData = getChartData();
 
   // SVG Line Chart coordinates calculation
-  const isDemo = chartData.isPlaceholder;
-  const scaleMax = isDemo ? 8 : Math.max(...chartData.totals, 2);
+  const isDemo = false;
+  const scaleMax = Math.max(...chartData.totals, 2);
   const ticks = [scaleMax, scaleMax * 0.75, scaleMax * 0.5, scaleMax * 0.25, 0].map(v => Number(v.toFixed(1)));
 
   const chartHeight = 150;
@@ -374,8 +373,6 @@ export default function UserDashboard({ sessionUser, initialTodos, fetchError }:
           <div className="hidden sm:flex items-center gap-1.5 rounded-lg border border-white/10 px-2.5 py-1 text-[10px] font-bold text-slate-400 bg-slate-900/40 shadow-xs">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
             <span>DB Online</span>
-            <span className="mx-1 text-white/10">|</span>
-            <span className="font-mono text-slate-350">14ms ping</span>
           </div>
 
           <div className="flex items-center gap-3">
@@ -464,7 +461,7 @@ export default function UserDashboard({ sessionUser, initialTodos, fetchError }:
               <div className="p-3 bg-slate-950/60 border border-white/10 rounded-lg text-[10px] space-y-1.5">
                 <div className="flex justify-between font-bold text-slate-400">
                   <span>Instance ID:</span>
-                  <span className="font-mono text-white">t2.micro</span>
+                  <span className="font-mono text-white">t3.micro</span>
                 </div>
                 <div className="flex justify-between font-bold text-slate-400">
                   <span>Provider:</span>
@@ -496,7 +493,7 @@ export default function UserDashboard({ sessionUser, initialTodos, fetchError }:
           {activeTab === 'my_tasks' && (
             <div className="w-full animate-slide-up-fade">
               {!fetchError ? (
-                <TodoList initialTodos={todos} onMutationSuccess={fetchTodos} ownerName={sessionUser} />
+                <TodoList initialTodos={teamTodos} onMutationSuccess={fetchTodos} ownerName={sessionUser} />
               ) : (
                 <div className="rounded-xl border border-slate-200 bg-white p-6 text-center text-slate-400 text-xs font-bold uppercase tracking-wider shadow-xs">
                   {fetchError}
@@ -648,7 +645,7 @@ export default function UserDashboard({ sessionUser, initialTodos, fetchError }:
                   <div className="bg-slate-900/40 border border-white/10 backdrop-blur-md rounded-xl p-5 flex flex-col justify-between shadow-2xl">
                     <div className="flex justify-between items-center text-[9px] font-bold text-slate-400 uppercase tracking-wider">
                       <span>Queued</span>
-                      <span className="h-1.5 w-1.5 rounded-full bg-slate-550" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
                     </div>
                     <div className="my-2.5">
                       <span className="text-3xl font-extrabold text-white font-mono leading-none">{notStartedTasks}</span>
@@ -663,8 +660,8 @@ export default function UserDashboard({ sessionUser, initialTodos, fetchError }:
                   <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">Team Members</span>
                   <div className="space-y-2.5 flex-1">
                     {([{id: 2, name: 'Zaky', color: 'bg-indigo-600'}, {id: 3, name: 'Hafiz', color: 'bg-emerald-600'}, {id: 4, name: 'Haris', color: 'bg-amber-600'}, {id: 5, name: 'Djordhi', color: 'bg-sky-600'}, {id: 6, name: 'Farid', color: 'bg-rose-600'}]).map((m) => {
-                      const memberTasks = todos.filter(t => t.user_id === m.id).length;
-                      const memberDone = todos.filter(t => t.user_id === m.id && t.status === 'completed').length;
+                      const memberTasks = teamTodos.filter(t => t.user_id === m.id).length;
+                      const memberDone = teamTodos.filter(t => t.user_id === m.id && t.status === 'completed').length;
                       const imgSrc = getProfileImage(m.name);
                       return (
                         <div key={m.id} className="flex items-center gap-2.5">
@@ -1189,7 +1186,7 @@ export default function UserDashboard({ sessionUser, initialTodos, fetchError }:
 
                 {/* Deliverable Coverage bar — mirrors card bottom stats */}
                 {(() => {
-                  const memberTasks = todos.filter(t => selectedProfile.user_id !== null && t.user_id === selectedProfile.user_id);
+                  const memberTasks = teamTodos.filter(t => selectedProfile.user_id !== null && t.user_id === selectedProfile.user_id);
                   const completedCount = memberTasks.filter(t => t.status === 'completed').length;
                   const totalCount = memberTasks.length;
                   const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
@@ -1221,13 +1218,13 @@ export default function UserDashboard({ sessionUser, initialTodos, fetchError }:
                    <div className="flex items-center justify-between mb-4">
                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Assigned Tasks</span>
                      <span className="text-[10px] font-mono font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
-                       {todos.filter(t => t.user_id === selectedProfile.user_id).length} Total
+                       {teamTodos.filter(t => t.user_id === selectedProfile.user_id).length} Total
                      </span>
                    </div>
 
                    {/* Status Summary Cards */}
                    {(() => {
-                     const memberTasks = todos.filter(t => selectedProfile.user_id !== null && t.user_id === selectedProfile.user_id);
+                     const memberTasks = teamTodos.filter(t => selectedProfile.user_id !== null && t.user_id === selectedProfile.user_id);
                      const pendingTasks = memberTasks.filter(t => t.status === 'pending');
                      const inProgressTasks = memberTasks.filter(t => t.status === 'in_progress');
                      const completedTasks = memberTasks.filter(t => t.status === 'completed');
@@ -1242,14 +1239,14 @@ export default function UserDashboard({ sessionUser, initialTodos, fetchError }:
                          {/* Summary stat row */}
                          <div className="grid grid-cols-3 gap-2">
                            {/* Pending */}
-                           <div className="bg-slate-900/60 border border-slate-600/20 rounded-xl p-3 flex flex-col gap-1 shadow-inner">
+                           <div className="bg-amber-950/30 border border-amber-500/15 rounded-xl p-3 flex flex-col gap-1 shadow-inner">
                              <div className="flex items-center gap-1.5">
-                               <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
-                               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Pending</span>
+                               <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                               <span className="text-[9px] font-bold text-amber-400 uppercase tracking-widest">Pending</span>
                              </div>
-                             <span className="text-xl font-extrabold font-mono text-slate-200 leading-none">{pendingTasks.length}</span>
-                             <div className="h-1 rounded-full bg-slate-800 overflow-hidden">
-                               <div className="h-full bg-slate-500 rounded-full transition-all duration-500" style={{ width: `${total > 0 ? (pendingTasks.length / total) * 100 : 0}%` }} />
+                             <span className="text-xl font-extrabold font-mono text-amber-200 leading-none">{pendingTasks.length}</span>
+                             <div className="h-1 rounded-full bg-amber-950/60 overflow-hidden">
+                               <div className="h-full bg-amber-500 rounded-full transition-all duration-500" style={{ width: `${total > 0 ? (pendingTasks.length / total) * 100 : 0}%` }} />
                              </div>
                            </div>
 
@@ -1302,7 +1299,7 @@ export default function UserDashboard({ sessionUser, initialTodos, fetchError }:
                          {/* Task list grouped by status */}
                          {[
                            { label: 'In Progress', tasks: inProgressTasks, dotClass: 'bg-sky-400', badgeBg: 'bg-sky-500/10 text-sky-400 border-sky-500/20', rowBorder: 'border-sky-500/10' },
-                           { label: 'Pending', tasks: pendingTasks, dotClass: 'bg-slate-400', badgeBg: 'bg-slate-500/10 text-slate-400 border-slate-500/20', rowBorder: 'border-white/5' },
+                           { label: 'Pending', tasks: pendingTasks, dotClass: 'bg-amber-400', badgeBg: 'bg-amber-500/10 text-amber-300 border-amber-500/25', rowBorder: 'border-amber-500/10' },
                            { label: 'Completed', tasks: completedTasks, dotClass: 'bg-emerald-400', badgeBg: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', rowBorder: 'border-emerald-500/10' },
                          ].map(group => group.tasks.length > 0 && (
                            <div key={group.label} className="space-y-1.5">
