@@ -1,15 +1,20 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 /**
  * InstanceBadge Component
  * Reads the public environment variable NEXT_PUBLIC_INSTANCE_ID
  * to visually display which EC2 instance is currently handling the request.
  */
-export default function InstanceBadge() {
+interface InstanceBadgeProps {
+  className?: string;
+}
+
+export default function InstanceBadge({ className = '' }: InstanceBadgeProps) {
   const [instanceId, setInstanceId] = useState<string>('Detecting...');
   const [timestamp, setTimestamp] = useState<string>('');
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let active = true;
@@ -26,8 +31,9 @@ export default function InstanceBadge() {
     };
   }, []);
 
+
   return (
-    <div className="relative overflow-hidden rounded-xl border border-white/10 bg-slate-900/40 backdrop-blur-md p-5 transition-colors duration-200 text-white shadow-2xl">
+    <div ref={containerRef} className={`relative overflow-hidden rounded-xl border border-white/10 bg-slate-900/40 backdrop-blur-md p-5 transition-colors duration-200 text-white shadow-2xl flex flex-col justify-between ${className}`}>
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

@@ -80,7 +80,7 @@ export default function TeamVisualizer({
         <div className="flex flex-col items-center justify-center bg-slate-950/40 border border-white/5 rounded-xl p-4 shrink-0 h-36">
           <div className="relative flex items-center justify-center">
             {/* SVG Ring */}
-            <svg className="h-20 w-20 transform -rotate-90">
+            <svg className="h-20 w-20 transform -rotate-90" viewBox="0 0 80 80">
               <circle
                 cx="40"
                 cy="40"

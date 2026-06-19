@@ -3,7 +3,8 @@ import { redirect } from 'next/navigation';
 
 /**
  * Root Dashboard Page.
- * Inspects session cookie and performs redirection to role-specific layouts.
+ * Inspects session cookie and redirects all authenticated users
+ * to the unified user dashboard.
  */
 export default async function DashboardPage() {
   const cookieStore = await cookies();
@@ -13,9 +14,5 @@ export default async function DashboardPage() {
     redirect('/login');
   }
 
-  if (sessionUser === 'admin') {
-    redirect('/dashboard/admin');
-  } else {
-    redirect('/dashboard/user');
-  }
+  redirect('/dashboard/user');
 }

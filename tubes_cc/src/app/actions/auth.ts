@@ -52,7 +52,7 @@ export async function loginAction(formData: FormData): Promise<LoginResult> {
 
     // 🚀 TAMBAHAN: Otomatis melempar user ke halaman utama setelah login sukses
     // Ganti '/dashboard' di bawah ini jika rute utama kelompokmu menggunakan nama lain (misal: '/home' or '/admin')
-    redirect('/dashboard'); 
+    redirect('/dashboard/user');
 
     return { success: true };
   } catch (error: any) {

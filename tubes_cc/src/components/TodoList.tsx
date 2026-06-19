@@ -32,6 +32,7 @@ export default function TodoList({
     if (lower.includes('hafiz')) return '/Hafiz.png';
     if (lower.includes('zaky')) return '/Zaky.png';
     if (lower.includes('haris')) return '/haris.png';
+    if (lower.includes('djordhi') || lower.includes('michail')) return '/Kai.png';
     return null;
   };
 
@@ -427,7 +428,7 @@ export default function TodoList({
   };
 
   return (
-    <div className="w-full flex flex-col gap-6 text-white">
+    <div className="w-full flex flex-col gap-6 text-white min-h-[calc(100vh-8rem)]">
 
       {/* 1. Header Toolbar (Search + View Toggles) */}
       <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-slate-900/40 border border-white/10 backdrop-blur-md rounded-xl p-4 shadow-sm w-full">
@@ -454,37 +455,51 @@ export default function TodoList({
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div className="flex-1 w-full md:max-w-xs relative group hidden sm:block">
-          <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Search tasks by title, details or #ID..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-950/50 border border-white/10 rounded-lg pl-9 pr-4 py-2 text-xs font-bold text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all shadow-inner"
-          />
-        </div>
+        {/* Search + New Task */}
+        <div className="flex flex-1 w-full md:justify-end items-center gap-3">
+          {!readOnly && (
+            <button
+              onClick={() => setIsCreatingInline(true)}
+              className="shrink-0 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg px-4 py-2 text-xs font-bold transition-all shadow-md shadow-indigo-500/10 cursor-pointer flex items-center justify-center gap-2"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              Log New Task
+            </button>
+          )}
 
-        {/* Mobile Filters Trigger */}
-        <button
-          onClick={() => setIsMobileFiltersOpen(true)}
-          className="md:hidden flex items-center justify-center gap-1.5 px-4 py-2 border border-white/10 bg-slate-900/40 rounded-lg text-xs font-bold text-slate-350 w-full"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-          </svg>
-          Configure Filters
-        </button>
+          <div className="flex-1 w-full sm:flex-none sm:w-full md:max-w-xs relative group hidden sm:block">
+            <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search tasks by title, details or #ID..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-slate-950/50 border border-white/10 rounded-lg pl-9 pr-4 py-2 text-xs font-bold text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all shadow-inner"
+            />
+          </div>
+
+          {/* Mobile Filters Trigger */}
+          <button
+            onClick={() => setIsMobileFiltersOpen(true)}
+            className="md:hidden flex items-center justify-center gap-1.5 px-4 py-2 border border-white/10 bg-slate-900/40 rounded-lg text-xs font-bold text-slate-350 shrink-0"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+            </svg>
+            Configure Filters
+          </button>
+        </div>
       </div>
 
       {/* 2. Main Directories Layout (Sidebar filters + Grid / Flow Content) */}
-      <div className="flex items-start gap-6 w-full">
+      <div className="flex items-stretch gap-5 w-full flex-1 min-h-0">
 
         {/* Left Filter Accordion Column (Desktop) */}
-        <aside className="w-60 shrink-0 hidden md:flex flex-col gap-5 bg-slate-900/40 border border-white/10 backdrop-blur-md rounded-xl p-5 shadow-sm sticky top-22">
+        <aside className="w-60 shrink-0 hidden md:flex flex-col gap-4 bg-slate-900/40 border border-white/10 backdrop-blur-md rounded-xl p-4 shadow-sm sticky top-24 self-start max-h-[calc(100vh-7rem)] overflow-y-auto overscroll-contain">
 
           {/* Section: Status */}
           <div className="space-y-3">
@@ -595,58 +610,31 @@ export default function TodoList({
             <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
               Sorting Order
             </h3>
-            <div className="relative">
-              <div 
-                className="w-full rounded-lg border border-white/10 px-3 py-2 text-xs text-white bg-slate-950/80 font-bold hover:border-indigo-500/50 cursor-pointer transition-colors flex justify-between items-center select-none"
-                onClick={() => setIsDesktopSortDropdownOpen(!isDesktopSortDropdownOpen)}
-              >
-                <span>
-                  {sortOrder === 'newest' ? 'Newest Logged' : sortOrder === 'oldest' ? 'Oldest Logged' : 'Alphabetical'}
-                </span>
-                <svg className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isDesktopSortDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-              
-              {isDesktopSortDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1.5 w-full bg-slate-800 border border-white/10 rounded-lg shadow-2xl overflow-hidden z-50 py-1">
-                  {[
-                    { value: 'newest', label: 'Newest Logged' },
-                    { value: 'oldest', label: 'Oldest Logged' },
-                    { value: 'alphabetical', label: 'Alphabetical' }
-                  ].map(opt => (
-                    <div 
-                      key={opt.value} 
-                      className="px-3 py-2 text-xs font-bold text-white hover:bg-slate-700/50 cursor-pointer transition-colors"
-                      onClick={() => { setSortOrder(opt.value as SortOrder); setIsDesktopSortDropdownOpen(false); }}
-                    >
-                      {opt.label}
-                    </div>
-                  ))}
-                </div>
-              )}
+            <div className="grid grid-cols-3 gap-1 p-1 rounded-lg bg-slate-950/60 border border-white/5">
+              {([
+                { value: 'newest' as SortOrder, label: 'Newest', icon: '↓' },
+                { value: 'oldest' as SortOrder, label: 'Oldest', icon: '↑' },
+                { value: 'alphabetical' as SortOrder, label: 'A – Z', icon: '⇅' },
+              ]).map(opt => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setSortOrder(opt.value)}
+                  className={`flex flex-col items-center gap-0.5 rounded-md py-1.5 px-1 text-[9px] font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+                    sortOrder === opt.value
+                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-900/40'
+                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <span className="text-[11px] leading-none">{opt.icon}</span>
+                  <span>{opt.label}</span>
+                </button>
+              ))}
             </div>
           </div>
 
-          <hr className="border-white/5" />
-
-          {/* Create Task button */}
-          {!readOnly && (
-            <div className="relative">
-              <button
-                onClick={() => setIsCreatingInline(true)}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg py-2.5 text-xs font-bold transition-all shadow-md shadow-indigo-500/10 cursor-pointer flex items-center justify-center gap-2"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-                Log New Task
-              </button>
-            </div>
-          )}
-
           {/* Total stats */}
-          <div className="pt-2 text-[10px] font-bold text-slate-400 uppercase space-y-1">
+          <div className="pt-1 text-[10px] font-bold text-slate-400 uppercase space-y-1 shrink-0">
             <div className="flex justify-between">
               <span>Team Coverage:</span>
               <span className="text-white font-mono">{rate}%</span>
@@ -657,8 +645,8 @@ export default function TodoList({
           </div>
 
           {/* Nyempill: tiny cloud bot peeking from bottom of sidebar */}
-          <div className="flex justify-center pt-1 select-none">
-            <svg viewBox="0 0 100 50" className="w-12 h-6 opacity-40 hover:opacity-80 transition-opacity animate-float-peeker">
+          <div className="flex justify-center pt-0.5 pb-1 select-none shrink-0">
+            <svg viewBox="0 0 100 50" className="w-10 h-5 opacity-40 hover:opacity-80 transition-opacity animate-float-peeker">
               <path d="M 30 45 C 22 45, 18 38, 24 32 C 24 22, 38 16, 48 24 C 56 16, 68 22, 66 32 C 72 32, 74 38, 68 45 Z" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="1.5" />
               <circle cx="40" cy="34" r="1.5" fill="#475569" />
               <circle cx="50" cy="34" r="1.5" fill="#475569" />
@@ -669,7 +657,7 @@ export default function TodoList({
         </aside>
 
         {/* Right Content Area (Grid / Flow directory display) */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 flex flex-col">
 
           {/* Error banner */}
           {errorMessage && (
@@ -682,7 +670,7 @@ export default function TodoList({
           )}
 
           {/* VIEW: GRID MODE (Default) */}
-          <div className="space-y-6">
+          <div className="flex-1 space-y-6">
             {sortedTodos.length === 0 ? (
               <div className="py-20 text-center rounded-xl border border-dashed border-white/10 bg-slate-900/40 shadow-xs">
                 <svg className="mx-auto h-12 w-12 text-slate-500" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -691,7 +679,7 @@ export default function TodoList({
                 <p className="mt-4 text-xs font-bold text-slate-400 uppercase tracking-wider">No deliverables match selected filter logs</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 auto-rows-fr">
                 {sortedTodos.map((todo) => {
                   const cat = getTaskCategory(todo.title, todo.description);
                   const catDetails = getCategoryDetails(cat);
@@ -700,7 +688,7 @@ export default function TodoList({
                     <div
                       key={todo.id}
                       onClick={() => setSelectedTodoId(todo.id)}
-                      className={`group bg-slate-900/40 border border-white/10 shadow-xs hover:border-white/20 transition-all duration-200 cursor-pointer flex flex-col justify-between overflow-hidden relative hover:-translate-y-0.5 backdrop-blur-sm rounded-xl`}
+                      className="group h-full min-h-[280px] bg-slate-900/40 border border-white/10 shadow-xs hover:border-white/20 transition-all duration-200 cursor-pointer flex flex-col justify-between overflow-hidden relative hover:-translate-y-0.5 backdrop-blur-sm rounded-xl"
                     >
                       {/* 1. Device Chrome Frame Mockup on Top */}
                       <div className="w-full bg-slate-950/60 border-b border-white/5 flex flex-col">
@@ -720,7 +708,7 @@ export default function TodoList({
                         </div>
 
                         {/* Interactive mock content depending on Status */}
-                        <div className="h-24 p-3 overflow-hidden select-none font-mono text-[8px] leading-tight">
+                        <div className="h-28 p-3 overflow-hidden select-none font-mono text-[8px] leading-tight">
                           {todo.status === 'completed' && (
                             <div className="text-emerald-400 bg-slate-950 p-2.5 rounded border border-white/5 h-full flex flex-col justify-between">
                               <div className="space-y-0.5">
@@ -1367,55 +1355,34 @@ export default function TodoList({
               {/* Sort Order */}
               <div className="space-y-3">
                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sorting Order</h4>
-                <div className="relative">
-                  <div 
-                    className="w-full rounded-lg border border-white/10 px-3 py-2 text-xs text-white bg-slate-950/80 font-bold hover:border-indigo-500/50 cursor-pointer transition-colors flex justify-between items-center select-none"
-                    onClick={() => setIsMobileSortDropdownOpen(!isMobileSortDropdownOpen)}
-                  >
-                    <span>
-                      {sortOrder === 'newest' ? 'Newest Logged' : sortOrder === 'oldest' ? 'Oldest Logged' : 'Alphabetical'}
-                    </span>
-                    <svg className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isMobileSortDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                  
-                  {isMobileSortDropdownOpen && (
-                    <div className="absolute bottom-full left-0 mb-1.5 w-full bg-slate-800 border border-white/10 rounded-lg shadow-2xl overflow-hidden z-50 py-1">
-                      {[
-                        { value: 'newest', label: 'Newest Logged' },
-                        { value: 'oldest', label: 'Oldest Logged' },
-                        { value: 'alphabetical', label: 'Alphabetical' }
-                      ].map(opt => (
-                        <div 
-                          key={opt.value} 
-                          className="px-3 py-2 text-xs font-bold text-white hover:bg-slate-700/50 cursor-pointer transition-colors"
-                          onClick={() => { setSortOrder(opt.value as SortOrder); setIsMobileSortDropdownOpen(false); }}
-                        >
-                          {opt.label}
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                <div className="grid grid-cols-3 gap-1 p-1 rounded-lg bg-slate-950/60 border border-white/5">
+                  {([
+                    { value: 'newest' as SortOrder, label: 'Newest', icon: '↓' },
+                    { value: 'oldest' as SortOrder, label: 'Oldest', icon: '↑' },
+                    { value: 'alphabetical' as SortOrder, label: 'A – Z', icon: '⇅' },
+                  ]).map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setSortOrder(opt.value)}
+                      className={`flex flex-col items-center gap-0.5 rounded-md py-2 px-1 text-[9px] font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer touch-manipulation ${
+                        sortOrder === opt.value
+                          ? 'bg-indigo-600 text-white shadow-md shadow-indigo-900/40'
+                          : 'text-slate-400 hover:text-white hover:bg-white/5'
+                      }`}
+                    >
+                      <span className="text-[11px] leading-none">{opt.icon}</span>
+                      <span>{opt.label}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
 
             <div className="pt-4 border-t border-white/5">
-              {!readOnly && (
-                <button
-                  onClick={() => {
-                    setIsMobileFiltersOpen(false);
-                    setIsCreatingInline(true);
-                  }}
-                  className="w-full bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg py-2.5 text-xs font-bold flex items-center justify-center gap-2"
-                >
-                  Log New Task
-                </button>
-              )}
               <button
                 onClick={() => setIsMobileFiltersOpen(false)}
-                className="w-full border border-white/10 text-slate-400 rounded-lg py-2 text-xs font-bold mt-2 hover:text-white hover:bg-white/5 cursor-pointer"
+                className="w-full border border-white/10 text-slate-400 rounded-lg py-2 text-xs font-bold hover:text-white hover:bg-white/5 cursor-pointer"
               >
                 Close Filters
               </button>

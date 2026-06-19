@@ -19,7 +19,7 @@ export default async function HomePage() {
   const sessionUser = cookieStore.get('session_user')?.value;
 
   if (sessionUser) {
-    redirect('/dashboard');
+    redirect('/dashboard/user');
   } else {
     redirect('/login');
   }

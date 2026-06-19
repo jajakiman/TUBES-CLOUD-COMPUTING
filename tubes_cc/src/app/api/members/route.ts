@@ -7,6 +7,7 @@ interface MemberRow extends mysql.RowDataPacket {
   id: number;
   name: string;
   class_room: string;
+  nim: string | null;
   user_id: number | null;
   total_tasks: number;
   completed_tasks: number;
@@ -25,13 +26,14 @@ export async function GET() {
       SELECT 
         m.id, 
         m.name, 
-        m.class_room, 
+        m.class_room,
+        m.nim,
         m.user_id,
         COUNT(t.id) as total_tasks,
         COUNT(CASE WHEN t.status = 'completed' THEN 1 END) as completed_tasks
       FROM members m
       LEFT JOIN todos t ON m.user_id = t.user_id
-      GROUP BY m.id, m.name, m.class_room, m.user_id
+      GROUP BY m.id, m.name, m.class_room, m.nim, m.user_id
       ORDER BY m.id ASC
     `);
 
@@ -52,6 +54,7 @@ export async function GET() {
         id: Number(row.id),
         name: String(row.name),
         class_room: String(row.class_room),
+        nim: row.nim ? String(row.nim) : null,
         user_id: row.user_id ? Number(row.user_id) : null,
         total_tasks,
         completed_tasks,

@@ -64,7 +64,7 @@ export default function LoginPage() {
           setAuthStatus('success');
           setSuccessMessage('Logged in successfully! Redirecting...');
           setTimeout(() => {
-            window.location.href = '/dashboard';
+            window.location.href = '/dashboard/user';
           }, 1000);
         } else {
           setAuthStatus('failed');

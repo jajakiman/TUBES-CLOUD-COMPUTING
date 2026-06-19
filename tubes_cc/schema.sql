@@ -34,18 +34,19 @@ CREATE TABLE `members` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `name` VARCHAR(100) NOT NULL,
   `class_room` VARCHAR(50) NOT NULL,
+  `nim` VARCHAR(20) NULL,
   `user_id` INT UNIQUE NULL,
   FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Seed Contributors Data linked to users
-INSERT INTO `members` (`id`, `name`, `class_room`, `user_id`) VALUES 
-(1, 'Muhammad Zaky Ryan Ardhiansyah', 'SI-47-05', 2),
-(2, 'Muhammad Hafiz Nur Irawan', 'SI-47-05', 3),
-(3, 'Muhammad Haris Caisariyanto', 'SI-47-05', 4),
-(4, 'Michail Djordhi', 'SI-47-05', 5),
-(5, 'Farid Munadhil', 'SI-47-05', 6)
-ON DUPLICATE KEY UPDATE `name`=VALUES(`name`), `class_room`=VALUES(`class_room`), `user_id`=VALUES(`user_id`);
+INSERT INTO `members` (`id`, `name`, `class_room`, `nim`, `user_id`) VALUES 
+(1, 'Muhammad Zaky Ryan Ardhiansyah', 'SI-47-05', '102022300380', 2),
+(2, 'Muhammad Hafiz Nur Irawan',      'SI-47-05', '102022300048', 3),
+(3, 'Muhammad Haris Caisariyanto',    'SI-47-05', '102022300112', 4),
+(4, 'Michail Djordhi',                'SI-47-05', '102022300411', 5),
+(5, 'Farid Munadhil',                 'SI-47-05', '102022300235', 6)
+ON DUPLICATE KEY UPDATE `name`=VALUES(`name`), `class_room`=VALUES(`class_room`), `nim`=VALUES(`nim`), `user_id`=VALUES(`user_id`);
 
 -- 3. Table structure for todos (Personal Tasks)
 CREATE TABLE `todos` (

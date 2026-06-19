@@ -201,6 +201,7 @@ export default function UserDashboard({ sessionUser, initialTodos, fetchError }:
     if (lower.includes('hafiz')) return '/Hafiz.png';
     if (lower.includes('zaky')) return '/Zaky.png';
     if (lower.includes('haris')) return '/haris.png';
+    if (lower.includes('djordhi') || lower.includes('michail')) return '/Kai.png';
     // Fallback if not found
     return null;
   };
@@ -356,7 +357,7 @@ export default function UserDashboard({ sessionUser, initialTodos, fetchError }:
             </div>
             <div className="flex flex-col">
               <h1 className="text-xs font-black tracking-wider text-white uppercase leading-none">
-                Kelompok 3 Cloud Portal
+                Kelompok 3 Cloud Computing
               </h1>
               <span className="text-[8.5px] text-slate-400 font-extrabold tracking-wider block mt-1 uppercase leading-none">
                 Workspace Console
@@ -415,20 +416,6 @@ export default function UserDashboard({ sessionUser, initialTodos, fetchError }:
             {/* Folder Tabs */}
             <nav className="space-y-1">
               <button
-                onClick={() => setActiveTab('my_tasks')}
-                className={`flex items-center gap-3 w-full text-left rounded-lg px-3.5 py-2.5 text-xs font-bold transition-all border ${
-                  activeTab === 'my_tasks'
-                    ? 'bg-indigo-600 text-white border-indigo-500/30 shadow-md shadow-indigo-500/10'
-                    : 'text-slate-400 hover:text-white hover:bg-white/5 border-transparent'
-                }`}
-              >
-                <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                </svg>
-                Tasks Directory
-              </button>
-
-              <button
                 onClick={() => setActiveTab('dashboard')}
                 className={`flex items-center gap-3 w-full text-left rounded-lg px-3.5 py-2.5 text-xs font-bold transition-all border ${
                   activeTab === 'dashboard'
@@ -440,6 +427,20 @@ export default function UserDashboard({ sessionUser, initialTodos, fetchError }:
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2" />
                 </svg>
                 Workspace Stats
+              </button>
+
+              <button
+                onClick={() => setActiveTab('my_tasks')}
+                className={`flex items-center gap-3 w-full text-left rounded-lg px-3.5 py-2.5 text-xs font-bold transition-all border ${
+                  activeTab === 'my_tasks'
+                    ? 'bg-indigo-600 text-white border-indigo-500/30 shadow-md shadow-indigo-500/10'
+                    : 'text-slate-400 hover:text-white hover:bg-white/5 border-transparent'
+                }`}
+              >
+                <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+                Tasks Directory
               </button>
 
               <button
@@ -664,11 +665,25 @@ export default function UserDashboard({ sessionUser, initialTodos, fetchError }:
                     {([{id: 2, name: 'Zaky', color: 'bg-indigo-600'}, {id: 3, name: 'Hafiz', color: 'bg-emerald-600'}, {id: 4, name: 'Haris', color: 'bg-amber-600'}, {id: 5, name: 'Djordhi', color: 'bg-sky-600'}, {id: 6, name: 'Farid', color: 'bg-rose-600'}]).map((m) => {
                       const memberTasks = todos.filter(t => t.user_id === m.id).length;
                       const memberDone = todos.filter(t => t.user_id === m.id && t.status === 'completed').length;
+                      const imgSrc = getProfileImage(m.name);
                       return (
                         <div key={m.id} className="flex items-center gap-2.5">
-                          <div className={`w-5 h-5 rounded-full ${m.color} flex items-center justify-center text-[8px] font-bold text-white shrink-0`}>
-                            {m.name[0]}
-                          </div>
+                          {imgSrc ? (
+                            <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 border border-white/10 shadow-sm">
+                              <img
+                                src={imgSrc}
+                                alt={m.name}
+                                className="w-full h-full object-cover"
+                                style={{
+                                  objectPosition: (m.name.toLowerCase().includes('zaky') || m.name.toLowerCase().includes('hafiz')) ? '50% 15%' : 'center'
+                                }}
+                              />
+                            </div>
+                          ) : (
+                            <div className={`w-6 h-6 rounded-full ${m.color} flex items-center justify-center text-[8px] font-bold text-white shrink-0`}>
+                              {m.name[0]}
+                            </div>
+                          )}
                           <span className="text-[10px] font-bold text-slate-300 flex-1 truncate">{m.name}</span>
                           <span className="text-[9px] font-mono font-bold text-slate-400">{memberDone}/{memberTasks}</span>
                         </div>
@@ -968,7 +983,7 @@ export default function UserDashboard({ sessionUser, initialTodos, fetchError }:
                             </div>
                             <div className="flex justify-between items-center">
                               <span>Student NIM</span>
-                              <span className="text-white font-mono">120223000{member.id}</span>
+                              <span className="text-white font-mono">{member.nim ?? '—'}</span>
                             </div>
                             <p className="text-[10px] text-slate-400 font-medium italic mt-2.5 leading-relaxed font-semibold">
                               &ldquo;{bio}&rdquo;
@@ -1041,19 +1056,6 @@ export default function UserDashboard({ sessionUser, initialTodos, fetchError }:
               <nav className="space-y-1.5">
                 <button
                   onClick={() => {
-                    setActiveTab('my_tasks');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`flex items-center gap-3 w-full text-left rounded-lg px-3.5 py-2.5 text-xs font-bold transition-all border ${
-                    activeTab === 'my_tasks'
-                      ? 'bg-indigo-600 text-white border-indigo-500/30 shadow-md shadow-indigo-500/10'
-                      : 'text-slate-400 hover:text-white border-transparent hover:bg-white/5'
-                  }`}
-                >
-                  Tasks Directory
-                </button>
-                <button
-                  onClick={() => {
                     setActiveTab('dashboard');
                     setIsMobileMenuOpen(false);
                   }}
@@ -1064,6 +1066,19 @@ export default function UserDashboard({ sessionUser, initialTodos, fetchError }:
                   }`}
                 >
                   Workspace Stats
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveTab('my_tasks');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center gap-3 w-full text-left rounded-lg px-3.5 py-2.5 text-xs font-bold transition-all border ${
+                    activeTab === 'my_tasks'
+                      ? 'bg-indigo-600 text-white border-indigo-500/30 shadow-md shadow-indigo-500/10'
+                      : 'text-slate-400 hover:text-white border-transparent hover:bg-white/5'
+                  }`}
+                >
+                  Tasks Directory
                 </button>
                 <button
                   onClick={() => {
@@ -1157,53 +1172,164 @@ export default function UserDashboard({ sessionUser, initialTodos, fetchError }:
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 pt-5 border-t border-white/5">
-                  <div className="bg-slate-900/50 rounded-xl p-4 border border-white/5 shadow-inner">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Student NIM</span>
-                    <span className="text-sm font-mono font-bold text-white">120223000{selectedProfile.id}</span>
+                {/* Card-identical info block */}
+                <div className="space-y-2 pt-5 border-t border-white/5 text-[10.5px] font-bold text-slate-400">
+                  <div className="flex justify-between items-center">
+                    <span>Class Room</span>
+                    <span className="text-white">{selectedProfile.class_room}</span>
                   </div>
-                  <div className="bg-slate-900/50 rounded-xl p-4 border border-white/5 shadow-inner">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Class Room</span>
-                    <span className="text-sm font-bold text-white">{selectedProfile.class_room}</span>
+                  <div className="flex justify-between items-center">
+                    <span>Student NIM</span>
+                    <span className="text-white font-mono">{selectedProfile.nim ?? '—'}</span>
                   </div>
-                </div>
-
-                <div>
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2.5">Description & Bio</span>
-                  <p className="text-sm text-slate-300 font-medium italic leading-relaxed border-l-2 border-indigo-500/50 pl-4 py-1">
-                    "{getMemberDetails(selectedProfile.name).bio}"
+                  <p className="text-[10px] text-slate-400 font-medium italic mt-2.5 leading-relaxed font-semibold pt-1">
+                    &ldquo;{getMemberDetails(selectedProfile.name).bio}&rdquo;
                   </p>
                 </div>
+
+                {/* Deliverable Coverage bar — mirrors card bottom stats */}
+                {(() => {
+                  const memberTasks = todos.filter(t => selectedProfile.user_id !== null && t.user_id === selectedProfile.user_id);
+                  const completedCount = memberTasks.filter(t => t.status === 'completed').length;
+                  const totalCount = memberTasks.length;
+                  const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+                  return (
+                    <div className="mt-2 space-y-2 pt-3 border-t border-white/5">
+                      <div className="flex items-center justify-between text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                        <span>Deliverable Coverage</span>
+                        <span className="text-white font-mono font-bold">{pct}%</span>
+                      </div>
+                      <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden border border-white/5">
+                        <div
+                          className="h-full transition-all duration-500"
+                          style={{
+                            width: `${pct}%`,
+                            background: pct === 100 ? '#22c55e' : pct >= 50 ? '#06b6d4' : '#6366f1'
+                          }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-[9px] text-slate-400 font-bold">
+                        <span>{completedCount} completed</span>
+                        <span>{totalCount} total</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+
 
                 <div className="pt-5 border-t border-white/5">
                    <div className="flex items-center justify-between mb-4">
                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Assigned Tasks</span>
                      <span className="text-[10px] font-mono font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
-                       {todos.filter(t => t.user_id === selectedProfile.id).length} Total
+                       {todos.filter(t => t.user_id === selectedProfile.user_id).length} Total
                      </span>
                    </div>
-                   
-                   <div className="space-y-3">
-                     {todos.filter(t => t.user_id === selectedProfile.id).length === 0 ? (
+
+                   {/* Status Summary Cards */}
+                   {(() => {
+                     const memberTasks = todos.filter(t => selectedProfile.user_id !== null && t.user_id === selectedProfile.user_id);
+                     const pendingTasks = memberTasks.filter(t => t.status === 'pending');
+                     const inProgressTasks = memberTasks.filter(t => t.status === 'in_progress');
+                     const completedTasks = memberTasks.filter(t => t.status === 'completed');
+                     const total = memberTasks.length;
+                     const completionPct = total > 0 ? Math.round((completedTasks.length / total) * 100) : 0;
+
+                     return memberTasks.length === 0 ? (
                        <div className="text-xs text-slate-500 italic p-4 bg-slate-900/30 border border-white/5 rounded-xl text-center">No active tasks assigned to this member.</div>
                      ) : (
-                       todos.filter(t => t.user_id === selectedProfile.id).map(task => (
-                         <div key={task.id} className="bg-slate-800/40 border border-white/5 hover:border-white/10 transition-colors rounded-xl p-3.5 flex justify-between items-start gap-4 shadow-sm">
-                            <div className="min-w-0 flex-1">
-                              <h4 className="text-xs font-bold text-white truncate">{task.title}</h4>
-                              <p className="text-[10px] text-slate-400 truncate mt-1">{task.description}</p>
-                            </div>
-                            <span className={`shrink-0 px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider border ${
-                              task.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                              task.status === 'in_progress' ? 'bg-sky-500/10 text-sky-400 border-sky-500/20' :
-                              'bg-slate-500/10 text-slate-400 border-slate-500/20'
-                            }`}>
-                              {task.status.replace('_', ' ')}
-                            </span>
+                       <div className="space-y-4">
+
+                         {/* Summary stat row */}
+                         <div className="grid grid-cols-3 gap-2">
+                           {/* Pending */}
+                           <div className="bg-slate-900/60 border border-slate-600/20 rounded-xl p-3 flex flex-col gap-1 shadow-inner">
+                             <div className="flex items-center gap-1.5">
+                               <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
+                               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Pending</span>
+                             </div>
+                             <span className="text-xl font-extrabold font-mono text-slate-200 leading-none">{pendingTasks.length}</span>
+                             <div className="h-1 rounded-full bg-slate-800 overflow-hidden">
+                               <div className="h-full bg-slate-500 rounded-full transition-all duration-500" style={{ width: `${total > 0 ? (pendingTasks.length / total) * 100 : 0}%` }} />
+                             </div>
+                           </div>
+
+                           {/* In Progress */}
+                           <div className="bg-sky-950/30 border border-sky-500/15 rounded-xl p-3 flex flex-col gap-1 shadow-inner">
+                             <div className="flex items-center gap-1.5">
+                               <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse shrink-0" />
+                               <span className="text-[9px] font-bold text-sky-400 uppercase tracking-widest">Running</span>
+                             </div>
+                             <span className="text-xl font-extrabold font-mono text-sky-200 leading-none">{inProgressTasks.length}</span>
+                             <div className="h-1 rounded-full bg-sky-950/60 overflow-hidden">
+                               <div className="h-full bg-sky-500 rounded-full transition-all duration-500" style={{ width: `${total > 0 ? (inProgressTasks.length / total) * 100 : 0}%` }} />
+                             </div>
+                           </div>
+
+                           {/* Completed */}
+                           <div className="bg-emerald-950/30 border border-emerald-500/15 rounded-xl p-3 flex flex-col gap-1 shadow-inner">
+                             <div className="flex items-center gap-1.5">
+                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                               <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">Done</span>
+                             </div>
+                             <span className="text-xl font-extrabold font-mono text-emerald-200 leading-none">{completedTasks.length}</span>
+                             <div className="h-1 rounded-full bg-emerald-950/60 overflow-hidden">
+                               <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: `${completionPct}%` }} />
+                             </div>
+                           </div>
                          </div>
-                       ))
-                     )}
-                   </div>
+
+                         {/* Overall completion progress bar */}
+                         <div className="space-y-1.5">
+                           <div className="flex justify-between items-center">
+                             <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Overall Completion</span>
+                             <span className="text-[9px] font-mono font-bold text-indigo-300">{completionPct}%</span>
+                           </div>
+                           <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden border border-white/5">
+                             <div
+                               className="h-full rounded-full transition-all duration-700 ease-out"
+                               style={{
+                                 width: `${completionPct}%`,
+                                 background: completionPct === 100
+                                   ? 'linear-gradient(90deg, #10b981, #34d399)'
+                                   : completionPct > 50
+                                   ? 'linear-gradient(90deg, #6366f1, #38bdf8)'
+                                   : 'linear-gradient(90deg, #6366f1, #818cf8)'
+                               }}
+                             />
+                           </div>
+                         </div>
+
+                         {/* Task list grouped by status */}
+                         {[
+                           { label: 'In Progress', tasks: inProgressTasks, dotClass: 'bg-sky-400', badgeBg: 'bg-sky-500/10 text-sky-400 border-sky-500/20', rowBorder: 'border-sky-500/10' },
+                           { label: 'Pending', tasks: pendingTasks, dotClass: 'bg-slate-400', badgeBg: 'bg-slate-500/10 text-slate-400 border-slate-500/20', rowBorder: 'border-white/5' },
+                           { label: 'Completed', tasks: completedTasks, dotClass: 'bg-emerald-400', badgeBg: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', rowBorder: 'border-emerald-500/10' },
+                         ].map(group => group.tasks.length > 0 && (
+                           <div key={group.label} className="space-y-1.5">
+                             <div className="flex items-center gap-2">
+                               <span className={`w-1.5 h-1.5 rounded-full ${group.dotClass} shrink-0`} />
+                               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{group.label}</span>
+                               <span className="ml-auto text-[9px] font-mono text-slate-500">{group.tasks.length}</span>
+                             </div>
+                             {group.tasks.map(task => (
+                               <div key={task.id} className={`bg-slate-800/40 border ${group.rowBorder} hover:border-white/10 transition-colors rounded-xl p-3 flex justify-between items-start gap-3 shadow-sm`}>
+                                 <div className="min-w-0 flex-1">
+                                   <h4 className="text-[11px] font-bold text-white truncate leading-snug">{task.title}</h4>
+                                   {task.description && (
+                                     <p className="text-[9px] text-slate-500 truncate mt-0.5">{task.description}</p>
+                                   )}
+                                 </div>
+                                 <span className={`shrink-0 px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider border ${group.badgeBg}`}>
+                                   {task.status === 'in_progress' ? 'Running' : task.status === 'completed' ? 'Done' : 'Pending'}
+                                 </span>
+                               </div>
+                             ))}
+                           </div>
+                         ))}
+
+                       </div>
+                     );
+                   })()}
                 </div>
               </div>
 
