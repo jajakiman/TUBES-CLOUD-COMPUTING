@@ -96,7 +96,7 @@ export default function UserDashboard({ sessionUser, initialTodos, fetchError }:
   }, [activeTab]);
 
   // Filter out any tasks that do not belong to active team members (user_id 2 to 6)
-  const teamTodos = todos.filter((t) => [2, 3, 4, 5, 6].includes(t.user_id));
+  const teamTodos = todos.filter((t) => [1, 2, 3, 4, 5].includes(t.user_id));
 
   // Compute metrics for personal dashboard tab
   const totalTasks = teamTodos.length;
@@ -659,7 +659,7 @@ export default function UserDashboard({ sessionUser, initialTodos, fetchError }:
                 <div className="md:col-span-3 bg-slate-900/40 border border-white/10 backdrop-blur-md rounded-xl p-5 shadow-2xl flex flex-col">
                   <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">Team Members</span>
                   <div className="space-y-2.5 flex-1">
-                    {([{id: 2, name: 'Zaky', color: 'bg-indigo-600'}, {id: 3, name: 'Hafiz', color: 'bg-emerald-600'}, {id: 4, name: 'Haris', color: 'bg-amber-600'}, {id: 5, name: 'Djordhi', color: 'bg-sky-600'}, {id: 6, name: 'Farid', color: 'bg-rose-600'}]).map((m) => {
+                    {([{id: 1, name: 'Zaky', color: 'bg-indigo-600'}, {id: 2, name: 'Hafiz', color: 'bg-emerald-600'}, {id: 3, name: 'Haris', color: 'bg-amber-600'}, {id: 4, name: 'Djordhi', color: 'bg-sky-600'}, {id: 5, name: 'Farid', color: 'bg-rose-600'}]).map((m) => {
                       const memberTasks = teamTodos.filter(t => t.user_id === m.id).length;
                       const memberDone = teamTodos.filter(t => t.user_id === m.id && t.status === 'completed').length;
                       const imgSrc = getProfileImage(m.name);

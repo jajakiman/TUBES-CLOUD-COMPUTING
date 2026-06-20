@@ -59,11 +59,11 @@ export default function TodoList({
     general: true,
   });
   const [assigneeFilter, setAssigneeFilter] = useState<Record<number, boolean>>({
-    2: true, // Zaky
-    3: true, // Hafiz
-    4: true, // Haris
-    5: true, // Djordhi
-    6: true, // Farid
+    1: true, // Zaky
+    2: true, // Hafiz
+    3: true, // Haris
+    4: true, // Djordhi
+    5: true, // Farid
   });
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
 
@@ -74,7 +74,7 @@ export default function TodoList({
   const [newTitle, setNewTitle] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [newCategory, setNewCategory] = useState<CategoryTag>('general');
-  const [newAssigneeId, setNewAssigneeId] = useState<number>(2); // Default to Muhammad Zaky (2)
+  const [newAssigneeId, setNewAssigneeId] = useState<number>(1); // Default to Muhammad Zaky (1)
   const [isCreatingInline, setIsCreatingInline] = useState(false);
   const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
@@ -169,7 +169,7 @@ export default function TodoList({
   };
 
   // Filter out any tasks that do not belong to active team members (user_id 2 to 6)
-  const teamTodos = todos.filter((t) => [2, 3, 4, 5, 6].includes(t.user_id));
+  const teamTodos = todos.filter((t) => [1, 2, 3, 4, 5].includes(t.user_id));
 
   // Filter & Search Logic
   const filteredTodos = teamTodos.filter((todo) => {
@@ -494,11 +494,11 @@ export default function TodoList({
 
   const getAssigneeName = (userId: number) => {
     switch (userId) {
-      case 2: return 'Zaky';
-      case 3: return 'Hafiz';
-      case 4: return 'Haris';
-      case 5: return 'Djordhi';
-      case 6: return 'Farid';
+      case 1: return 'Zaky';
+      case 2: return 'Hafiz';
+      case 3: return 'Haris';
+      case 4: return 'Djordhi';
+      case 5: return 'Farid';
       default: return 'Admin';
     }
   };
@@ -660,7 +660,7 @@ export default function TodoList({
               Filter by Assignee
             </h3>
             <div className="space-y-2 text-xs font-bold text-slate-300">
-              {([{id: 2, name: 'Zaky'}, {id: 3, name: 'Hafiz'}, {id: 4, name: 'Haris'}, {id: 5, name: 'Djordhi'}, {id: 6, name: 'Farid'}] as const).map((member) => (
+              {([{id: 1, name: 'Zaky'}, {id: 2, name: 'Hafiz'}, {id: 3, name: 'Haris'}, {id: 4, name: 'Djordhi'}, {id: 5, name: 'Farid'}] as const).map((member) => (
                 <label key={member.id} className="flex items-center gap-2.5 cursor-pointer hover:text-white transition-colors">
                   <input
                     type="checkbox"
@@ -1247,8 +1247,8 @@ export default function TodoList({
                   <div className="flex items-center gap-3">
                     {(() => {
                        const members = [
-                         { id: 2, name: 'Zaky' }, { id: 3, name: 'Hafiz' }, 
-                         { id: 4, name: 'Haris' }, { id: 5, name: 'Djordhi' }, { id: 6, name: 'Farid' }
+                         { id: 1, name: 'Zaky' }, { id: 2, name: 'Hafiz' }, 
+                         { id: 3, name: 'Haris' }, { id: 4, name: 'Djordhi' }, { id: 5, name: 'Farid' }
                        ];
                        const selName = members.find(m => m.id === newAssigneeId)?.name || 'Admin';
                        const img = getProfileImage(selName);
@@ -1265,11 +1265,11 @@ export default function TodoList({
                     })()}
                     <span className="text-xs font-bold text-white">
                       {[
-                         { id: 2, name: 'Muhammad Zaky Ryan Ardhiansyah' }, 
-                         { id: 3, name: 'Muhammad Hafiz Nur Irawan' }, 
-                         { id: 4, name: 'Muhammad Haris Caisariyanto' }, 
-                         { id: 5, name: 'Michail Djordhi' }, 
-                         { id: 6, name: 'Farid Munadhil' }
+                         { id: 1, name: 'Muhammad Zaky Ryan Ardhiansyah' }, 
+                         { id: 2, name: 'Muhammad Hafiz Nur Irawan' }, 
+                         { id: 3, name: 'Muhammad Haris Caisariyanto' }, 
+                         { id: 4, name: 'Michail Djordhi' }, 
+                         { id: 5, name: 'Farid Munadhil' }
                       ].find(m => m.id === newAssigneeId)?.name || 'Admin'}
                     </span>
                   </div>
@@ -1281,11 +1281,11 @@ export default function TodoList({
                 {isAssigneeDropdownOpen && (
                   <div className="absolute top-full left-0 mt-1.5 w-full bg-slate-800 border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
                     {[
-                      { id: 2, name: 'Muhammad Zaky Ryan Ardhiansyah', shortName: 'Zaky' },
-                      { id: 3, name: 'Muhammad Hafiz Nur Irawan', shortName: 'Hafiz' },
-                      { id: 4, name: 'Muhammad Haris Caisariyanto', shortName: 'Haris' },
-                      { id: 5, name: 'Michail Djordhi', shortName: 'Djordhi' },
-                      { id: 6, name: 'Farid Munadhil', shortName: 'Farid' }
+                      { id: 1, name: 'Muhammad Zaky Ryan Ardhiansyah', shortName: 'Zaky' },
+                      { id: 2, name: 'Muhammad Hafiz Nur Irawan', shortName: 'Hafiz' },
+                      { id: 3, name: 'Muhammad Haris Caisariyanto', shortName: 'Haris' },
+                      { id: 4, name: 'Michail Djordhi', shortName: 'Djordhi' },
+                      { id: 5, name: 'Farid Munadhil', shortName: 'Farid' }
                     ].map(member => (
                       <div 
                         key={member.id} 
@@ -1412,7 +1412,7 @@ export default function TodoList({
               <div className="space-y-3">
                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Filter by Assignee</h4>
                 <div className="space-y-2 text-xs font-bold text-slate-300">
-                  {([{id: 2, name: 'Zaky'}, {id: 3, name: 'Hafiz'}, {id: 4, name: 'Haris'}, {id: 5, name: 'Djordhi'}, {id: 6, name: 'Farid'}] as const).map((member) => (
+                  {([{id: 1, name: 'Zaky'}, {id: 2, name: 'Hafiz'}, {id: 3, name: 'Haris'}, {id: 4, name: 'Djordhi'}, {id: 5, name: 'Farid'}] as const).map((member) => (
                     <label key={member.id} className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
